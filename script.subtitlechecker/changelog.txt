@@ -1,0 +1,28 @@
+v0.7
+setup for git
+
+v0.6
+fix type podnapsisi to podnapisi
+
+v0.6
+fix info screen when called from screen where background proces is running
+renaming some parameters
+
+v0.5
+fix CleanMovieTitle error
+
+v0.4
+added language property 
+extra error handling
+settings added for scrapers
+
+v0.3
+fix window handling 
+cleanup resources
+added caching
+
+v0.2
+fix addic7ed scraper for movies.
+
+v0.1
+Initial release.

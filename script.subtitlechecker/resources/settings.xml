@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="32006">
+      <setting label="32004" type="bool" id="OSenabled" default="true"/>
+      <setting label="32005" type="number" id="OSpriority"  default="10"/>
+      <setting label="32003" type="lsep"/>
+      <setting label="32001" type="text" id="OSuser" default=""/>
+      <setting label="32002" type="text" id="OSpass" default="" option = "hidden"/>
+    </category> 
+    <category label="32007">
+      <setting label="32004" type="bool" id="A7enabled" default="true"/>
+      <setting label="32005" type="number" id="A7priority"  default="20"/>
+    </category>
+    <category label="32008">
+      <setting label="32004" type="bool" id="PNenabled" default="false"/>
+      <setting label="32005" type="number" id="PNpriority"  default="30"/>
+    </category>   
+    <category label="32009">
+      <setting label="32010" type="number" id="CacheTimeNotFound" default="1"/>
+      <setting label="32011" type="number" id="CacheTimeFound" default="30"/>
+      <setting label="32012" type="action" action="RunScript(script.skinsubtitlechecker, flushcache=True)"/>
+    </category>
+</settings>
