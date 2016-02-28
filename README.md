@@ -16,61 +16,66 @@ When launched the script provides those properties :
 
 To use it in your skin, just call it this way :
 
-* `RunScript(script.skinsubtitlechecker,availabereturnvalue=subavailable&notavailablereturnvalue=subnotavailable&searchreturnvalue=subunknown&year=$INFO[ListItem.Year]&season=$INFO[ListItem.Season]&episode=$INFO[ListItem.Episode]&tvshow=$INFO[ListItem.TVShowTitle]&originaltitle=$INFO[ListItem.OriginalTitle]&title=$INFO[ListItem.Title]&filename=$INFO[ListItem.FileName])`   
-for a one shot request
-* `RunScript(script.skinsubtitlechecker,availabereturnvalue=subavailable&notavailablereturnvalue=subnotavailable&searchreturnvalue=subunknown&backend=True)`  
-to run in background
+* for a one shot request
+```
+RunScript(script.skinsubtitlechecker,availabereturnvalue=subavailable&notavailablereturnvalue=subnotavailable&searchreturnvalue=subunknown&year=$INFO[ListItem.Year]&season=$INFO[ListItem.Season]&episode=$INFO[ListItem.Episode]&tvshow=$INFO[ListItem.TVShowTitle]&originaltitle=$INFO[ListItem.OriginalTitle]&title=$INFO[ListItem.Title]&filename=$INFO[ListItem.FileName])
+```   
+* to run in background
+```
+RunScript(script.skinsubtitlechecker,availabereturnvalue=subavailable&notavailablereturnvalue=subnotavailable&searchreturnvalue=subunknown&backend=True)
+```  
+
 
 ##Parameters
 All parameters are optional. If not given, the defaults are used.
-*  `flushcache`   
+*  flushcache   
 	- Flush the cache.  
 	- Allowed values: `True` or `False`.  
 	- Default: `False`  
 	- When `True`, **All** other parameters are ignored.  
 	- Used in add-on Setting
-*  `backend`  
+*  backend  
 	- Indicates if the script has to run in background.   
 	- Allowed values: `True` or `False`.  
 	- Default: `False`  
-	- When `True`, `year`, `season`, `episode`, `tvshow`, `originaltitle`, `title` and `filename` are ignored. 
-*  `year`  
+	- When `True`; `year`, `season`, `episode`, `tvshow`, `originaltitle`, `title` and `filename` are ignored. 
+*  year  
 	- Year of movie/episode.  
 	- Default: `''`  
 	- Ignored when `flushcache=True` or `backend=True`.
-*  `season`  
+*  season  
 	- Season of episode (empty for movie).  
 	- Default `''`  
 	- Ignored when `flushcache=True` or `backend=True`.
-*  `episode`  
+*  episode  
 	- Episode(empty for movie).  
 	- Default `''`  
 	- Ignored when `flushcache=True` or `backend=True`.  
-*  `tvshow`  
+*  tvshow  
 	- TV show title (empty for movie).  
 	- Default `''`  
 	- Ignored when `flushcache=True` or `backend=True`.  
-*  `originaltitle`  
+*  originaltitle  
 	- Original title.  
 	- Default `''`  
 	- Ignored when `flushcache=True` or `backend=True`.  
-*  `title`  
+*  title  
 	- Title.  
 	- Default `''`  
 	- Ignored when `flushcache=True` or `backend=True`.  
-*  `filename`  
+*  filename  
 	- Filename.  
 	- Default `''`  
 	- Ignored when `flushcache=True` or `backend=True`.  
-*  `availabereturnvalue`  
+*  availabereturnvalue  
 	- Value returned if subtitle is available.  
 	- Default `''`  
 	- Ignored when `flushcache=True`.
-*  `notavailablereturnvalue`  
+*  notavailablereturnvalue  
 	- Value returned if subtitle is not available.  
 	- Default `''`  
 	- Ignored when `flushcache=True`.
-*  `searchreturnvalue`  
+*  searchreturnvalue  
 	- Value returned during search or when an error occured.  
 	- Default `''`  
 	- Ignored when `flushcache=True`.  
