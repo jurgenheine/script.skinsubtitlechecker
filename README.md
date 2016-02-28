@@ -1,12 +1,13 @@
 script.subtitlechecker
 ======================
 
-Displays if subtitle is present while navigating in Kodi library.
+Makes it possible to show if there is a subtitle available for a movie or an episode while navigating in Kodi.
+
+###Properties
 
 When launched the script provides those properties :
-
 * SubTitleAvailable  
-	- Depending of result, the values of the folowing parameters are returned: 
+	- Depending of result, the values of the values of the folowing parameters are returned: 
 		- `availabereturnvalue`
 		- `notavailablereturnvalue`
 		- `searchreturnvalue`  
@@ -17,19 +18,7 @@ When launched the script provides those properties :
 	- `Window(videolibrary).Property(SubTitleAvailabeleLanguage)`  
 	- `Window(movieinformation).Property(SubTitleAvailabeleLanguage)`
 
-To use it in your skin, just call it this way :
-
-* for a one shot request
-```
-RunScript(script.skinsubtitlechecker,availabereturnvalue=subavailable&notavailablereturnvalue=subnotavailable&searchreturnvalue=subunknown&year=$INFO[ListItem.Year]&season=$INFO[ListItem.Season]&episode=$INFO[ListItem.Episode]&tvshow=$INFO[ListItem.TVShowTitle]&originaltitle=$INFO[ListItem.OriginalTitle]&title=$INFO[ListItem.Title]&filename=$INFO[ListItem.FileName])
-```   
-* to run in background
-```
-RunScript(script.skinsubtitlechecker,availabereturnvalue=subavailable&notavailablereturnvalue=subnotavailable&searchreturnvalue=subunknown&backend=True)
-```  
-
-
-##Parameters
+###Parameters
 All parameters are optional. If not given, the defaults are used.
 *  flushcache   
 	- Flush the cache.  
@@ -83,6 +72,17 @@ All parameters are optional. If not given, the defaults are used.
 	- Default `''`  
 	- Ignored when `flushcache=True`.  
 
-##Integration in your skin
+###Integration in your skin
+
+To use it in your skin, just call it this way :
+
+* for a one shot request
+```
+RunScript(script.skinsubtitlechecker,availabereturnvalue=subavailable&notavailablereturnvalue=subnotavailable&searchreturnvalue=subunknown&year=$INFO[ListItem.Year]&season=$INFO[ListItem.Season]&episode=$INFO[ListItem.Episode]&tvshow=$INFO[ListItem.TVShowTitle]&originaltitle=$INFO[ListItem.OriginalTitle]&title=$INFO[ListItem.Title]&filename=$INFO[ListItem.FileName])
+```   
+* to run in background
+```
+RunScript(script.skinsubtitlechecker,availabereturnvalue=subavailable&notavailablereturnvalue=subnotavailable&searchreturnvalue=subunknown&backend=True)
+```  
 
 On https://github.com/jurgenheine/skin.confluence_withsubcheck.git there is an example based on the confluence skin with detailed information how to use this script in a skin
