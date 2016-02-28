@@ -16,9 +16,9 @@ When launched the script provides those properties :
 
 To use it in your skin, just call it this way :
 
-* `RunScript(script.skinsubtitlechecker, year=$INFO[ListItem.Year], season=$INFO[ListItem.Season], episode==$INFO[ListItem.Episode], tvshow=$INFO[ListItem.TVShowTitle], originaltitle=$INFO[ListItem.OriginalTitle], title=$INFO[ListItem.Title], filename=$INFO[ListItem.FileName], availabereturnvalue=Yes,notavailablereturnvalue=No,searchreturnvalue=)`   
+* `RunScript(script.skinsubtitlechecker,availabereturnvalue=subavailable&notavailablereturnvalue=subnotavailable&searchreturnvalue=subunknown&year=$INFO[ListItem.Year]&season=$INFO[ListItem.Season]&episode=$INFO[ListItem.Episode]&tvshow=$INFO[ListItem.TVShowTitle]&originaltitle=$INFO[ListItem.OriginalTitle]&title=$INFO[ListItem.Title]&filename=$INFO[ListItem.FileName])`   
 for a one shot request
-* `RunScript(script.skinsubtitlechecker,availabereturnvalue=OSDSubtitlesNF.png&notavailablereturnvalue=searchreturnvalue,&backend=True)`  
+* `RunScript(script.skinsubtitlechecker,availabereturnvalue=subavailable&notavailablereturnvalue=subnotavailable&searchreturnvalue=subunknown&backend=True)`  
 to run in background
 
 ##Parameters
@@ -75,55 +75,6 @@ All parameters are optional. If not given, the defaults are used.
 	- Default `''`  
 	- Ignored when `flushcache=True`.  
 
-##Integration in your skin (confluence as example)
+##Integration in your skin
 
-5 files need to be modified as follow :
-
-###includes.xml
-
-Add this new variable at the end of the file (before the `</include>`) :  
-`<variable name="SubTitleAvailable">`  
->`<value condition="System.HasAddon(script.skinsubtitlechecker)">$INFO[window.Property(SubTitleAvailable)]</value>`  
->`<value></value>`
- 
-`</variable>`  
- 
-`<variable name="SubTitleAvailabeleLanguage">`  
->`<value condition="System.HasAddon(script.skinsubtitlechecker)">$INFO[window.Property(SubTitleAvailabeleLanguage)]</value>`  
->`<value></value>` 
- 
-`</variable>`  
-
-###IncludesCodecFlagging.xml
-
-Add this new variable at the end of the file (before the `</include>`) :  
-`<include name="SubtitlePresentConditions">`
->`<control type="image">`
->>`<description>Subtitle Present Image</description>`  
->>`<width>80</width>`  
->>`<height>35</height>`  
->>`<aspectratio align="left">keep</aspectratio>`  
->>`<texture>$VAR[SubTitleAvailable]</texture>`
-
->`</control>`
-
-`</include>`
-
-###MyVideoNav.xml
-
-Add `<onload>RunScript(script.skinsubtitlechecker,availabereturnvalue=OSDSubtitlesNF.png&backend=True)</onload>`  at the beginning.
-	
-###DialogVideoInfo.xml
-
-Add  `<onload>RunScript(script.skinsubtitlechecker,availabereturnvalue=OSDSubtitlesNF.png&year=$INFO[ListItem.Year]&season=$INFO[ListItem.Season]&episode=$INFO[ListItem.Episode]&tvshow=$INFO[ListItem.TVShowTitle]&originaltitle=$INFO[ListItem.OriginalTitle]&title=$INFO[ListItem.Title]&filename=$INFO[ListItem.FileName])</onload>`   at the beginning.
-
-
-
-###ViewsVideoLibrary.xml
-
-Add the following line to each view under Media Codec Flagging Images
-`<include>SubtitlePresentConditions</include>`
-
-______________________
-
-_This is my first kodi addon, for any suggestions, do not hesitate to email me :)_
+On https://github.com/jurgenheine/skin.confluence_withsubcheck.git there is an example based on the confluence skin with detailed information how to use this script in a skin
