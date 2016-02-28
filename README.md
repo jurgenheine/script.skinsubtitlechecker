@@ -6,7 +6,10 @@ Displays if subtitle is present while navigating in Kodi library.
 When launched the script provides those properties :
 
 * SubTitleAvailable  
-	- Depending of result, the values of the folowing parameters are returned: `availabereturnvalue`, `notavailablereturnvalue`, `searchreturnvalue`  
+	- Depending of result, the values of the folowing parameters are returned: 
+		- `availabereturnvalue`
+		- `notavailablereturnvalue`
+		- `searchreturnvalue`  
 	- `Window(videolibrary).Property(SubTitleAvailable)`  
 	- `Window(movieinformation).Property(SubTitleAvailable)`
 * SubTitleAvailabeleLanguage  
