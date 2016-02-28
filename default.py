@@ -115,7 +115,7 @@ class SubtitleChecker:
 
     def run_backend(self):
         self.stop = False
-        while not self._stop:
+        while not self.stop:
             if not xbmc.getCondVisibility("Container.Scrolling"):
                 item = self.get_current_listitem()
                 if self.check_item_not_empty(item) and (not self.item or self.check_item_changed(item)):
