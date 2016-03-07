@@ -17,7 +17,7 @@ class SubtitleChecker:
     def __init__(self):
         log(__name__, "version %s started" % get_version(), LOGNOTICE)
         self._init_vars()
-        self._parse_argv()
+        self._parse_argv() 
             
     def __enter__(self):
         return self
