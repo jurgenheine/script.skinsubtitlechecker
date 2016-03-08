@@ -6,17 +6,38 @@ Makes it possible to show if there is a subtitle available for a movie or an epi
 ###Properties
 
 When launched the script provides those properties :
-* SubTitleAvailable  
+* skinsubtitlechecker.available  
 	- Depending of result, the values of the values of the folowing parameters are returned: 
 		- `availabereturnvalue`
 		- `notavailablereturnvalue`
 		- `searchreturnvalue`  
-	- `Window(videolibrary).Property(SubTitleAvailable)`  
-	- `Window(movieinformation).Property(SubTitleAvailable)`
-* SubTitleAvailabeleLanguage  
-	- The language of the subtitle search according ISO 639-2T. **Beware**: This is different then Kodi, which is returning ISO 639-2B or ISO 639-2T  
-	- `Window(videolibrary).Property(SubTitleAvailabeleLanguage)`  
-	- `Window(movieinformation).Property(SubTitleAvailabeleLanguage)`
+	- `Window(videolibrary).Property(skinsubtitlechecker.available)`  
+	- `Window(movieinformation).Property(skinsubtitlechecker.available)`
+* skinsubtitlechecker.language.iso_639_1  
+	- The language of the subtitle search according ISO 639-1 (2 letters).  
+	- Examples: `nl`, `fr`  
+	- `Window(videolibrary).Property(skinsubtitlechecker.language.iso_639_1)`  
+	- `Window(movieinformation).Property(skinsubtitlechecker.language.iso_639_1)`
+* skinsubtitlechecker.language.iso_639_2b  
+	- The 3 letters language code of the subtitle search according ISO 639-2B.  
+	- Examples: `dut`, `fre`  
+	- `Window(videolibrary).Property(skinsubtitlechecker.language.iso_639_2b)`  
+	- `Window(movieinformation).Property(skinsubtitlechecker.language.iso_639_2b)`
+* skinsubtitlechecker.language.iso_639_2t  
+	- The 3 letters language code of the subtitle search according ISO 639-2T.  
+	- Examples: `nld`, `fra`  
+	- `Window(videolibrary).Property(skinsubtitlechecker.language.iso_639_2t)`  
+	- `Window(movieinformation).Property(skinsubtitlechecker.language.iso_639_2t)`
+* skinsubtitlechecker.language.iso_639_2_kodi  
+	- The 3 letters language code of the subtitle search according Kodi (ISO 639-2B or ISO 639-2T)  
+	- Examples: `dut`, `fre`  
+	- `Window(videolibrary).Property(skinsubtitlechecker.language.iso_639_2_kodi)`  
+	- `Window(movieinformation).Property(skinsubtitlechecker.language.iso_639_2_kodi)`
+* skinsubtitlechecker.language.full  
+	- The full language name of the subtitle search according Kodi.  
+	- Examples:	`dutch`, `french`  
+	- `Window(videolibrary).Property(skinsubtitlechecker.language.full)`  
+	- `Window(movieinformation).Property(skinsubtitlechecker.language.full)`
 
 ###Parameters
 All parameters are optional. If not given, the defaults are used.

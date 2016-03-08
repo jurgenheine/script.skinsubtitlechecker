@@ -1,7 +1,7 @@
 import os
 import time
 import xbmcvfs
-import helpers
+from lib import helpers
 from sqlite3 import dbapi2
 from sqlite3 import OperationalError as OperationalError
 from sqlite3 import DatabaseError as DatabaseError
@@ -17,7 +17,6 @@ class DBConnection():
     def __init__(self):
         self.db = None
         
-#         helpers.log(__name__, 'Loading sqlite3 as DB engine', helpers.LOGDEBUG)
         db_dir = helpers.translate_path("special://database")
         self.db_path = os.path.join(db_dir, 'subtitlecheckercache.db')
         self.db_lib = dbapi2
@@ -34,21 +33,29 @@ class DBConnection():
         self.__execute(sql)
         self.__execute('VACUUM')
 
+    def cleanup_cache(self):
+        now = time.time()
+        minimal_timestamp_found_value = now - helpers.get_cache_found_timeout()
+        minimal_timestamp_not_found_value = now - helpers.get_cache_not_found_timeout()
+        sql = 'DELETE FROM subtitle_cache WHERE ( timestamp < ? AND subtitle < 1) OR ( timestamp < ? AND subtitle > 0)'
+        self.__execute(sql, (minimal_timestamp_not_found_value, minimal_timestamp_found_value))
+        self.__execute('VACUUM')
+
     def cache_subtitle(self, item, subtitle_present):
         now = time.time()
         sql = 'REPLACE INTO subtitle_cache (year, season, episode, tvshow, title, filename, subtitle, timestamp) VALUES(?, ?, ?, ?, ?, ?, ?, ?)'
         self.__execute(sql, (item['year'], item['season'], item['episode'], item['tvshow'], item['title'], item['filename'],int(subtitle_present), now))
 
     def delete_cached_url(self, item):
-        sql = 'DELETE FROM subtitle_cache WHERE year = ? and season = ? and episode = ? and tvshow = ? and title = ? and filename = ?'
+        sql = 'DELETE FROM subtitle_cache WHERE year = ? AND season = ? AND episode = ? AND tvshow = ? AND title = ? AND filename = ?'
         self.__execute(sql, (item['year'], item['season'], item['episode'], item['tvshow'], item['title'], item['filename']))
         
-    def get_cached_subtitle(self, item, cache_limit_found=30,cache_limit_not_found=1):
+    def get_cached_subtitle(self, item):
         created = 0
         now = time.time()
-        limit_found = 60 * 60 * 24 * cache_limit_found
-        limit_not_found = 60 * 60 * cache_limit_not_found
-        sql = 'SELECT timestamp, subtitle FROM subtitle_cache WHERE year = ? and season = ? and episode = ? and tvshow = ? and title = ? and filename = ?'
+        limit_found = helpers.get_cache_found_timeout()
+        limit_not_found = helpers.get_cache_not_found_timeout()
+        sql = 'SELECT timestamp, subtitle FROM subtitle_cache WHERE year = ? AND season = ? AND episode = ? AND tvshow = ? AND title = ? AND filename = ?'
         rows = self.__execute(sql, (item['year'], item['season'], item['episode'], item['tvshow'], item['title'], item['filename']))
 
         if rows:

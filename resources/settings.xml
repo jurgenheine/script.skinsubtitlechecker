@@ -16,7 +16,7 @@
       <setting label="32005" type="number" id="PNpriority"  default="30"/>
     </category>   
     <category label="32009">
-      <setting label="32010" type="number" id="CacheTimeNotFound" default="1"/>
+      <setting label="32010" type="number" id="CacheTimeNotFound" default="2"/>
       <setting label="32011" type="number" id="CacheTimeFound" default="30"/>
       <setting label="32012" type="action" action="RunScript(script.skinsubtitlechecker, flushcache=True)"/>
     </category>

@@ -40,6 +40,17 @@ def log(module, msg, level=xbmc.LOGDEBUG):
 def get_setting(name):
     return __addon__.getSetting(name)
 
+def get_cache_not_found_timeout():
+    cachetimenotfound = get_setting("CacheTimeNotFound")
+    if not cachetimenotfound:
+        cachetimenotfound = "2"
+    return 60 * 60 * float(cachetimenotfound)
+
+def get_cache_found_timeout():
+    cachetimefound = get_setting("CacheTimeFound")
+    if not cachetimefound:
+        cachetimefound = "30"
+    return 60 * 60 * 24 * float(get_setting("CacheTimeFound"))
 
 def normalize_string(stri):
     return unicodedata.normalize(
