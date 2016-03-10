@@ -30,7 +30,6 @@ class SubtitleChecker:
         self.item = None
         self.stop = False
         self.db = None
-        self.last_cleanup_cache = time.time() - helpers.get_cache_not_found_timeout()
     
     @staticmethod
     def _get_params():
@@ -131,8 +130,7 @@ class SubtitleChecker:
         while not self.stop:
             if self.check_current_item_subtitle():
                 self.check_subtitlte()
-            elif not self.cleanup_cache():
-                xbmc.sleep(200)
+            xbmc.sleep(200)
             self.check_stop_backend()
 
     def get_current_listitem(self):
@@ -194,14 +192,6 @@ class SubtitleChecker:
                 self.item = item
                 return True
         return False
-
-    def cleanup_cache(self):
-        if self.last_cleanup_cache <= time.time() - helpers.get_cache_not_found_timeout():
-            self.db.cleanup_cache()
-            self.last_cleanup_cache = time.time()
-            return True
-        else:
-            return False
 
     def check_stop_backend(self):
         if not xbmc.getCondVisibility("Window.IsVisible(videolibrary)"):
@@ -295,9 +285,12 @@ class SubtitleChecker:
         try:
             self.db.__exit__(exc_type, exc_value, traceback)
             self.db = None
+            del self.db
         except:
             # database is not yet set
             pass
+
+        # clean variables
         self.dialogwindow = None
         self.flush_cache = None
         self.item = None
@@ -307,7 +300,17 @@ class SubtitleChecker:
         self.unknown_text = None
         self.window = None
         self._stop = None
-        self.last_cleanup_cache = None
+        
+        #delete pointers to variables
+        del self.dialogwindow
+        del self.flush_cache
+        del self.item
+        del self.not_present_text
+        del self.preferredsub
+        del self.present_text
+        del self.unknown_text
+        del self.window
+        del self._stop
 
 if __name__ == "__main__":
     with SubtitleChecker() as subtitlechecker:

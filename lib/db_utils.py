@@ -90,6 +90,7 @@ class DBConnection():
         try: self.db.close()
         except: pass
         self.db = None
+        del self.db
 
     def create_db(self):
         # noinspection PyBroadException
@@ -158,3 +159,5 @@ class DBConnection():
         self.close_db()
         self.db_lib = None
         self.db_path = None
+        del self.db_lib
+        del self.db_path 

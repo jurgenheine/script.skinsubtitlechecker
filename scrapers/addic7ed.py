@@ -27,6 +27,9 @@ class Adic7edServer:
         self.host = None
         self.release_pattern = None
         self.req_headers = None
+        del self.host
+        del self.release_pattern
+        del self.req_headers
     
     def get_url(self, url):
         request = urllib2.Request(url, headers=self.req_headers)

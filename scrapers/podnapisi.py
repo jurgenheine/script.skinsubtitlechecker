@@ -16,6 +16,7 @@ class PNServer:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.search_url = None
+        del self.search_url
                 
     def searchsubtitles( self, item):
         try:

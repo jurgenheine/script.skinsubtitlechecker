@@ -1,3 +1,6 @@
+v0.9
+Moved clean cache to seperate background service to improve performance
+
 v0.8
 Changed variable names for skins and added more language variables
 added clean cache functionality to clean cache in background

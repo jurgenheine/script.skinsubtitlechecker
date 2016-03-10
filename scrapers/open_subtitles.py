@@ -16,6 +16,7 @@ class OSDBServer:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.base_url = None
+        del self.base_url
         
     def searchsubtitles( self, item):
         try:
