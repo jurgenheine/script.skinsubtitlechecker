@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7a12b6f5-4b65-43c2-b4e1-2461d76d7d70}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>default.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId />
+    <InterpreterVersion />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="addic7ed_dict.txt" />
+    <Content Include="changelog.txt" />
+    <Content Include="fanart.jpg" />
+    <Content Include="icon.png" />
+    <Content Include="LICENSE.txt" />
+    <Content Include="resources\addic7ed_dict.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="default.py" />
+    <Compile Include="lib\db_utils.py" />
+    <Compile Include="lib\helpers.py" />
+    <Compile Include="lib\__init__.py" />
+    <Compile Include="scrapers\addic7ed.py" />
+    <Compile Include="scrapers\open_subtitles.py" />
+    <Compile Include="scrapers\podnapisi.py" />
+    <Compile Include="scrapers\__init__.py" />
+    <Compile Include="service.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="lib" />
+    <Folder Include="resources" />
+    <Folder Include="scrapers" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>
