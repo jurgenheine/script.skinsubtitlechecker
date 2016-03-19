@@ -2,6 +2,7 @@ import os
 import time
 import xbmcvfs
 from lib import helpers
+from lib.setting import Setting
 from sqlite3 import dbapi2
 from sqlite3 import OperationalError as OperationalError
 from sqlite3 import DatabaseError as DatabaseError
@@ -16,7 +17,7 @@ MAX_TRIES = 5
 class DBConnection():
     def __init__(self):
         self.db = None
-        
+        self.settings = Setting()
         db_dir = helpers.translate_path("special://database")
         self.db_path = os.path.join(db_dir, 'subtitlecheckercache.db')
         self.db_lib = dbapi2
@@ -35,8 +36,8 @@ class DBConnection():
 
     def cleanup_cache(self):
         now = time.time()
-        minimal_timestamp_found_value = now - helpers.get_cache_found_timeout()
-        minimal_timestamp_not_found_value = now - helpers.get_cache_not_found_timeout()
+        minimal_timestamp_found_value = now - self.settings.get_cache_found_timeout()
+        minimal_timestamp_not_found_value = now - self.settings.get_cache_not_found_timeout()
         sql = 'DELETE FROM subtitle_cache WHERE ( timestamp < ? AND subtitle < 1) OR ( timestamp < ? AND subtitle > 0)'
         self.__execute(sql, (minimal_timestamp_not_found_value, minimal_timestamp_found_value))
         self.__execute('VACUUM')
@@ -53,8 +54,8 @@ class DBConnection():
     def get_cached_subtitle(self, item):
         created = 0
         now = time.time()
-        limit_found = helpers.get_cache_found_timeout()
-        limit_not_found = helpers.get_cache_not_found_timeout()
+        limit_found = self.settings.get_cache_found_timeout()
+        limit_not_found = self.settings.get_cache_not_found_timeout()
         sql = 'SELECT timestamp, subtitle FROM subtitle_cache WHERE year = ? AND season = ? AND episode = ? AND tvshow = ? AND title = ? AND filename = ?'
         rows = self.__execute(sql, (item['year'], item['season'], item['episode'], item['tvshow'], item['title'], item['filename']))
 
@@ -157,7 +158,10 @@ class DBConnection():
     
     def __exit__(self, exc_type, exc_value, traceback):
         self.close_db()
+        self.settings.__exit__(exc_type, exc_value, traceback)
         self.db_lib = None
         self.db_path = None
+        self.settings = None
         del self.db_lib
         del self.db_path 
+        del self.settings

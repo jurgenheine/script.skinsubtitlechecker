@@ -1,3 +1,8 @@
+v 0.10
+Clean-up code
+Changed detection of movie or episode information
+When not movie or episode an empty string is set in the property skinsubtitlechecker.available
+
 v0.9
 Moved clean cache to seperate background service to improve performance
 

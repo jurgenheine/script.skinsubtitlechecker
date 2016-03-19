@@ -37,21 +37,6 @@ def log(module, msg, level=xbmc.LOGDEBUG):
             pass  # just give up
 
 
-def get_setting(name):
-    return __addon__.getSetting(name)
-
-def get_cache_not_found_timeout():
-    cachetimenotfound = get_setting("CacheTimeNotFound")
-    if not cachetimenotfound:
-        cachetimenotfound = "2"
-    return 60 * 60 * float(cachetimenotfound)
-
-def get_cache_found_timeout():
-    cachetimefound = get_setting("CacheTimeFound")
-    if not cachetimefound:
-        cachetimefound = "30"
-    return 60 * 60 * 24 * float(get_setting("CacheTimeFound"))
-
 def normalize_string(stri):
     return unicodedata.normalize(
          'NFKD', unicode(unicode(stri, 'utf-8'))
@@ -68,62 +53,3 @@ def get_script_path():
 
 def get_clean_movie_title(path, usefoldername=False):
     return xbmc.getCleanMovieTitle(path, usefoldername)
-
-
-def get_kodi_setting(name):
-    """
-    Uses XBMC/Kodi JSON-RPC API to retrieve subtitles location settings values.
-    """
-    command = '''{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "Settings.GetSettingValue",
-    "params": {
-        "setting": "%s"
-    }
-}'''
-    result = xbmc.executeJSONRPC(command % name)
-    py = loads(result)
-    if 'result' in py and 'value' in py['result']:
-        return py['result']['value']
-    else:
-        raise ValueError
-
-
-def get_ISO_639_2_B(iso_639_2_code):
-        for x in LANGUAGES:
-            if iso_639_2_code == x[2] or iso_639_2_code == x[3]:
-                return x[2]
-
-
-def get_ISO_639_2_T(iso_639_2_code):
-        for x in LANGUAGES:
-            if iso_639_2_code == x[2] or iso_639_2_code == x[3]:
-                return x[3]
-
-
-LANGUAGES = (
-
-    # Full Language name[0]       ISO 639-1          ISO 639-2B             ISO 639-2T
-
-    ("Albanian"                   , "sq",            "alb",                 "sqi"  ),
-    ("Armenian"                   , "hy",            "arm",                 "hye"  ),
-    ("Basque"                     , "eu",            "baq",                 "eus"  ),
-    ("Burmese"                    , "my",            "bur",                 "mya"  ),
-    ("Chinese"                    , "zh",            "chi",                 "zho"  ),
-    ("Czech"                      , "cs",            "cze",                 "ces"  ),
-    ("Dutch"                      , "nl",            "dut",                 "nld"  ),
-    ("French"                     , "fr",            "fre",                 "fra"  ),
-    ("Georgian"                   , "ka",            "geo",                 "kat"  ),
-    ("German"                     , "de",            "ger",                 "deu"  ),
-    ("Greek"                      , "el",            "gre",                 "ell"  ),
-    ("Icelandic"                  , "is",            "ice",                 "isl"  ),
-    ("Persian"                    , "fa",            "per",                 "fas"  ),
-    ("Macedonian"                 , "mk",            "mac",                 "mkd"  ),
-    ("Malay"                      , "ms",            "may",                 "msa"  ),
-    ("Maori"                      , "mi",            "mao",                 "mri"  ),
-    ("Romanian"                   , "ro",            "rum",                 "ron"  ),
-    ("Slovak"                     , "sk",            "slo",                 "slk"  ),
-    ("Tibetan"                    , "bo",            "tib",                 "bod"  ),
-    ("Welsh"                      , "cy",            "wel",                 "cym"  ),
-)

@@ -2,7 +2,8 @@
 # Based on contents from https://github.com/amet/service.subtitles.opensubtitles
 
 import xmlrpclib
-from lib.helpers import log, get_version,get_setting, LOGNOTICE
+from lib.helpers import log, get_version, LOGNOTICE
+from lib.setting import Setting
 
 __scriptname__ = "XBMC Subtitles"
 
@@ -21,7 +22,8 @@ class OSDBServer:
     def searchsubtitles( self, item):
         try:
             server = xmlrpclib.Server( self.base_url, verbose=0 )
-            login = server.LogIn(get_setting( "OSuser" ), get_setting( "OSpass" ), "en", "%s_v%s" %(__scriptname__.replace(" ","_"),get_version()))
+            with Setting as setting:
+                login = server.LogIn(setting.get_setting( "OSuser" ), setting.get_setting( "OSpass" ), "en", "%s_v%s" %(__scriptname__.replace(" ","_"),get_version()))
             osdb_token  = login[ "token" ]
             
             if ( osdb_token ) :

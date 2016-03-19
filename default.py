@@ -10,10 +10,12 @@ from scrapers.addic7ed import Adic7edServer
 from scrapers.podnapisi import PNServer
 from lib import helpers
 from lib.db_utils import DBConnection
+from lib.setting import Setting
+from lib.language import Language
+from lib.properties import Properties
 
 #import ptvsd
 #ptvsd.enable_attach(secret='my_secret')
-
 class SubtitleChecker:
     def __init__(self):
         helpers.log(__name__, "version %s started" % helpers.get_version(), helpers.LOGNOTICE)
@@ -24,9 +26,9 @@ class SubtitleChecker:
         return self
 
     def _init_vars(self):
-        self.window = xbmcgui.Window(10025)  # MyVideoNav.xml (videolibrary)
-        self.dialogwindow = xbmcgui.Window(12003)  # DialogVideoInfo.xml (movieinformation)
-        self.preferredsub = ''
+        self.settings = Setting()
+        self.language = Language()
+        self.properties = Properties()
         self.item = None
         self.stop = False
         self.db = None
@@ -55,7 +57,7 @@ class SubtitleChecker:
         self.flush_cache = self.params.get('flushcache', False)
         self.present_text = self.params.get('availabereturnvalue', '')
         self.not_present_text = self.params.get('notavailablereturnvalue', '')
-        self.unknown_text = self.params.get('searchreturnvalue', '')
+        self.search_text = self.params.get('searchreturnvalue', '')
 
     def execute(self):
         # don't run if already in back-end
@@ -69,11 +71,11 @@ class SubtitleChecker:
                 helpers.log(__name__, 'Start running background.', helpers.LOGNOTICE)
                 # run in back-end if parameter was set
                 xbmc.executebuiltin("SetProperty(skinsubtitlechecker.backend_running,true,videolibrary)")
-                self.set_subtitle_properties(-1)
+                self.set_subtitle_properties(None)
                 self.run_backend()
             else:
                 helpers.log(__name__, 'Execute once.')
-                self.set_parameter_listitem()
+                self.item = self.get_parameter_listitem()
                 self.check_subtitlte()
         else:
             helpers.log(__name__, 'Running in background detected, no action.')
@@ -85,44 +87,15 @@ class SubtitleChecker:
     
     def prepare_run(self):
         self.set_db()
-        self.set_language()
         self.set_scrapers()
     
     def set_db(self):
         self.db = DBConnection()
         
-    def set_language(self):
-        lan = helpers.get_kodi_setting('locale.subtitlelanguage')
-        if lan == "Portuguese (Brazil)":
-            self.preferredsub = "pob"
-        elif lan == "Greek":
-            self.preferredsub = "ell"
-        else:
-            self.preferredsub = xbmc.convertLanguage(lan, xbmc.ISO_639_2)
-        language_iso_639_1 = xbmc.convertLanguage(lan, xbmc.ISO_639_1)
-        language_iso_639_2t = helpers.get_ISO_639_2_T(self.preferredsub)
-        language_iso_639_2b = helpers.get_ISO_639_2_B(self.preferredsub)
-        
-        self.window.setProperty('skinsubtitlechecker.language.full', lan)
-        self.dialogwindow.setProperty('skinsubtitlechecker.language.full', lan)
- 
-        self.window.setProperty('skinsubtitlechecker.language.iso_639_1', language_iso_639_1)
-        self.dialogwindow.setProperty('skinsubtitlechecker.language.iso_639_1', language_iso_639_1)   
-        
-        self.window.setProperty('skinsubtitlechecker.language.iso_639_2t', language_iso_639_2t) 
-        self.dialogwindow.setProperty('skinsubtitlechecker.language.iso_639_2t', language_iso_639_2t) 
-        
-        self.window.setProperty('skinsubtitlechecker.language.iso_639_2b', language_iso_639_2b)
-        self.dialogwindow.setProperty('skinsubtitlechecker.language.iso_639_2b', language_iso_639_2b) 
-           
-        self.window.setProperty('skinsubtitlechecker.language.iso_639_2_kodi', self.preferredsub)
-        self.dialogwindow.setProperty('skinsubtitlechecker.language.iso_639_2_kodi', self.preferredsub)   
-        
-
     def set_scrapers(self):
-        self.scrapers = sorted([('opensubtitle', int(helpers.get_setting("OSpriority")), bool(helpers.get_setting("OSenabled"))),
-                                ('addic7ed', int(helpers.get_setting("A7priority")), bool(helpers.get_setting("A7enabled"))),
-                                ('podnapisi', int(helpers.get_setting("PNpriority")), bool(helpers.get_setting("PNenabled")))],
+        self.scrapers = sorted([('opensubtitle', int(self.settings.get_setting("OSpriority")), bool(self.settings.get_setting("OSenabled"))),
+                                ('addic7ed', int(self.settings.get_setting("A7priority")), bool(self.settings.get_setting("A7enabled"))),
+                                ('podnapisi', int(self.settings.get_setting("PNpriority")), bool(self.settings.get_setting("PNenabled")))],
                                key=itemgetter(2))
 
     def run_backend(self):
@@ -142,8 +115,8 @@ class SubtitleChecker:
                                 xbmc.getInfoLabel("ListItem.Title"),
                                 xbmc.getInfoLabel("ListItem.FileName"))
     
-    def set_parameter_listitem(self):
-        self.item = self.create_item(self.params.get('year', ''),
+    def get_parameter_listitem(self):
+        return self.create_item(self.params.get('year', ''),
                                      self.params.get('season', ''),
                                      self.params.get('episode', ''),
                                      self.params.get('tvshow', ''),
@@ -153,44 +126,25 @@ class SubtitleChecker:
     
     @staticmethod
     def check_item_not_empty(item):
-        if(item['title'] == "" and
-           item['tvshow'] == ""):
+        if(item['title'] == "" and item['tvshow'] == ""):
             # no item data for search
             return False
-        elif(item['title'] != "" and
-             item['tvshow'] == "" and
-             item['year'] == ""):
-            # title is known, but no tv-show title and no year, extra check to get year
-            title, year = helpers.get_clean_movie_title(item['title'])
-            if title == "" or year < 1900:
-                # not tv-show and no title or no year, so probably not a movie
-                return False
-        
-        elif(item['season'] != "" and
-             item['episode'] == ""):
-            # Browse Season, no search possible
-            return False
-            
-#         if (xbmc.getCondVisibility("ListItem.IsFolder")):
-#         Not checking for folder, not always an indication for not video
         return True
     
     def check_item_changed(self, item):
-        if(self.item['year'] != item['year'] or
-           self.item['season'] != item['season'] or
-           self.item['episode'] != item['episode'] or
-           self.item['tvshow'] != item['tvshow'] or
-           self.item['title'] != item['title'] or
-           self.item['filename'] != item['filename']):
+        if(self.item['year'] != item['year'] or self.item['season'] != item['season'] or self.item['episode'] != item['episode'] or self.item['tvshow'] != item['tvshow'] or self.item['title'] != item['title'] or self.item['filename'] != item['filename']):
             return True
         return False
     
     def check_current_item_subtitle(self):
-        if not xbmc.getCondVisibility("Container.Scrolling"):
+        if not xbmc.getCondVisibility("Container.Scrolling") and (xbmc.getCondVisibility("Container.Content(movies)") or xbmc.getCondVisibility("Container.Content(episodes)")):
             item = self.get_current_listitem()
             if self.check_item_not_empty(item) and (not self.item or self.check_item_changed(item)):
                 self.item = item
                 return True
+        else: 
+                # clear subtitle check
+                self.set_subtitle_properties(None)
         return False
 
     def check_stop_backend(self):
@@ -210,7 +164,7 @@ class SubtitleChecker:
                 'filename': helpers.normalize_string(filename),
                 '3let_language': []}
 
-        item['3let_language'].append(self.preferredsub)
+        item['3let_language'].append(self.language.preferredsub)
 #         log(__name__, "3let language: %s" % item['3let_language'])
         
         if item['title'] == "":
@@ -228,8 +182,7 @@ class SubtitleChecker:
     
     def check_subtitlte(self):
         self.set_subtitle_properties(-1)
-        helpers.log(__name__, "data to search: year=%s; season=%s; episode=%s; tvshow=%s; title=%s; filename= %s" %
-            (self.item['year'],
+        helpers.log(__name__, "data to search: year=%s; season=%s; episode=%s; tvshow=%s; title=%s; filename= %s" % (self.item['year'],
              self.item['season'],
              self.item['episode'],
              self.item['tvshow'],
@@ -254,7 +207,8 @@ class SubtitleChecker:
                         with PNServer()as pnserver:
                             helpers.log(__name__, 'start search Podnapisi.')
                             subtitle_present = pnserver.searchsubtitles(self.item)
-#                 helpers.log(__name__, 'subtitle present value:%s' %(subtitle_present))
+#                 helpers.log(__name__, 'subtitle present value:%s'
+#                 %(subtitle_present))
                 if subtitle_present == 1:
                     break
             # store result to cache
@@ -266,51 +220,60 @@ class SubtitleChecker:
 
     def set_subtitle_properties(self, subtitle_present):
         if subtitle_present == -1:
-            self.window.setProperty('skinsubtitlechecker.available', self.unknown_text)
-            self.dialogwindow.setProperty('skinsubtitlechecker.available', self.unknown_text)
+            self.language.set_language()
+            self.properties.set_property('skinsubtitlechecker.available', self.search_text)
         elif subtitle_present == 1:
             helpers.log(__name__, 'subtitle found.')
-            self.window.setProperty('skinsubtitlechecker.available', self.present_text)
-            self.dialogwindow.setProperty('skinsubtitlechecker.available', self.present_text)
-        else:
+            self.language.set_language()
+            self.properties.set_property('skinsubtitlechecker.available', self.present_text)
+        elif subtitle_present == 0:
             helpers.log(__name__, 'no subtitle found')
-            self.window.setProperty('skinsubtitlechecker.available', self.not_present_text)
-            self.dialogwindow.setProperty('skinsubtitlechecker.available', self.not_present_text)
-    
+            self.language.set_language()
+            self.properties.set_property('skinsubtitlechecker.available', self.not_present_text)
+        else:
+            helpers.log(__name__, 'no subtitle search for item')
+            self.language.reset_language()
+            self.properties.set_property('skinsubtitlechecker.available', '')
+
     def __exit__(self, exc_type, exc_value, traceback):
         self.backend = None
         self.params = None
-        # call explicit the exit function of the db, it is not used within with statement 
+        
         # noinspection PyBroadException
-        try:
+        try:    
+            # call explicit the exit function of the db, it is not used within with
+            # statement
             self.db.__exit__(exc_type, exc_value, traceback)
             self.db = None
             del self.db
         except:
             # database is not yet set
             pass
+        self.settings.__exit__(exc_type, exc_value, traceback)
+        self.language.__exit__(exc_type, exc_value, traceback)
+        self.properties.__exit__(exc_type, exc_value, traceback)
 
         # clean variables
-        self.dialogwindow = None
         self.flush_cache = None
         self.item = None
         self.not_present_text = None
-        self.preferredsub = None
         self.present_text = None
-        self.unknown_text = None
-        self.window = None
+        self.search_text = None
         self._stop = None
-        
+        self.settings = None
+        self.language = None
+        self.properties = None
+
         #delete pointers to variables
-        del self.dialogwindow
         del self.flush_cache
         del self.item
         del self.not_present_text
-        del self.preferredsub
         del self.present_text
-        del self.unknown_text
-        del self.window
+        del self.search_text
         del self._stop
+        del self.settings
+        del self.language
+        del self.properties
 
 if __name__ == "__main__":
     with SubtitleChecker() as subtitlechecker:

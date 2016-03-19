@@ -6,7 +6,7 @@
     <ProjectGuid>{7a12b6f5-4b65-43c2-b4e1-2461d76d7d70}</ProjectGuid>
     <ProjectHome />
     <StartupFile>default.py</StartupFile>
-    <SearchPath />
+    <SearchPath>..\..\KodiStubs\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
@@ -22,16 +22,29 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="addic7ed_dict.txt" />
+    <Content Include="addon.xml" />
     <Content Include="changelog.txt" />
     <Content Include="fanart.jpg" />
     <Content Include="icon.png" />
     <Content Include="LICENSE.txt" />
     <Content Include="resources\addic7ed_dict.txt" />
+    <Content Include="resources\language\Dutch\strings.po" />
+    <Content Include="resources\language\English\strings.po" />
+    <Content Include="resources\settings.xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="default.py" />
     <Compile Include="lib\db_utils.py" />
     <Compile Include="lib\helpers.py" />
+    <Compile Include="lib\language.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\properties.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\setting.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="lib\__init__.py" />
     <Compile Include="scrapers\addic7ed.py" />
     <Compile Include="scrapers\open_subtitles.py" />
@@ -42,6 +55,9 @@
   <ItemGroup>
     <Folder Include="lib" />
     <Folder Include="resources" />
+    <Folder Include="resources\language\" />
+    <Folder Include="resources\language\Dutch\" />
+    <Folder Include="resources\language\English\" />
     <Folder Include="scrapers" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />

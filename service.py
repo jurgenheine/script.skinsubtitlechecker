@@ -1,12 +1,14 @@
 import xbmc
 from lib import helpers
 from lib.db_utils import DBConnection
+from lib.setting import Setting
 
 class Service:
     def __init__(self):
         helpers.log(__name__, "version %s started" % helpers.get_version(), helpers.LOGNOTICE)
         self.db = DBConnection()
-        self.wait_time = helpers.get_cache_not_found_timeout()
+        self.setting = Setting()
+        self.wait_time = self.setting.get_cache_not_found_timeout()
     
     def __enter__(self):
         return self
@@ -20,6 +22,7 @@ class Service:
             if monitor.waitForAbort(self.wait_time):
                 # Abort was requested while waiting. We should exit
                 break
+
     def __exit__(self, exc_type, exc_value, traceback):
         try:
             self.db.__exit__(exc_type, exc_value, traceback)
@@ -28,7 +31,10 @@ class Service:
         except:
             # database is not yet set
             pass
+        self.setting.__exit__(exc_type, exc_value, traceback)
+        self.setting=None
         self.wait_time = None
+        del self.setting
         del self.wait_time 
   
 if __name__ == "__main__":
