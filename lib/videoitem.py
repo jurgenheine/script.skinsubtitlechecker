@@ -34,7 +34,8 @@ class VideoItem:
                                 kodi.get_info_label("ListItem.TVShowTitle"),
                                 kodi.get_info_label("ListItem.OriginalTitle"), 
                                 kodi.get_info_label("ListItem.Title"),
-                                kodi.get_info_label("ListItem.FileName"))
+                                kodi.get_info_label("ListItem.FileName"),
+                                language_iso_639_2)
     
     def set_parameter_listitem(self, params,language_iso_639_2):
         self.item = self.create_item(params.get('year', ''),
@@ -43,7 +44,8 @@ class VideoItem:
                                      params.get('tvshow', ''),
                                      params.get('originaltitle', ''),
                                      params.get('title', ''),
-                                     params.get('filename', ''))
+                                     params.get('filename', ''),
+                                     language_iso_639_2)
 
     def create_item(self, year, season, episode, tvshow, originaltitle, title, filename,language_iso_639_2):
         item = {'year': kodi.normalize_string(year),  # Year

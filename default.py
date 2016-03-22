@@ -62,7 +62,7 @@ class SubtitleChecker:
         if self.flush_cache:
             self.execute_flush_cache()
             
-        elif self.videogui.property_videolibrary_empty(skinsubtitlechecker.backend_running):
+        elif self.videogui.property_videolibrary_empty("skinsubtitlechecker.backend_running"):
             self.prepare_run()
             
             if self.backend:
@@ -118,7 +118,7 @@ class SubtitleChecker:
         self.set_subtitle_properties(-1)
         # check cache first
         kodi.log(__name__, 'start search local cache.')
-        subtitle_present = self.db.get_cached_subtitle(self.item)
+        subtitle_present = self.db.get_cached_subtitle(self.videoitem.item)
         if subtitle_present == -1:
             # only check if not found in cache, no subtitle is a result
             for scraper in self.scrapers:
@@ -141,7 +141,7 @@ class SubtitleChecker:
             # store result to cache
             if subtitle_present >= 0:
                 kodi.log(__name__, 'cache item')
-                self.db.cache_subtitle(self.item, subtitle_present)
+                self.db.cache_subtitle(self.videoitem.item, subtitle_present)
             
         self.set_subtitle_properties(subtitle_present)
 

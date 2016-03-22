@@ -50,7 +50,7 @@ class Language:
         self.language_iso_639_1 = None
         self.language_iso_639_2t = None
         self.language_iso_639_2b = None
-        del self.preferredsub
+        del self.language_iso_639_2
         del self.languages
         del self.settings
         del self.language_iso_639_1
