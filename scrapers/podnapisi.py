@@ -3,7 +3,7 @@
 
 from xml.dom import minidom
 import urllib
-from lib.helpers import log, LOGNOTICE
+from lib import kodi
 
 
 class PNServer:
@@ -38,7 +38,7 @@ class PNServer:
                                        str(item['episode'])
                                       )
                 
-                log( __name__ ,"Search URL - %s" % (url))
+                kodi.log( __name__ ,"Search URL - %s" % (url))
                 
                 subtitles = self.fetch(url)
                 
@@ -46,7 +46,7 @@ class PNServer:
                     return 1
             return 0
         except:
-            log(__name__, "failed to connect to Podnapisi service for subtitle search", LOGNOTICE)
+            kodi.log(__name__, "failed to connect to Podnapisi service for subtitle search", kodi.LOGNOTICE)
             return -1
   
     def fetch(self,url):

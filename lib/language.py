@@ -1,50 +1,36 @@
-import xbmc
-from lib.properties import Properties
+from lib import kodi
 from lib.setting import Setting
  
 class Language:
     def __init__(self):
-        self.preferredsub = None
         self.init_languages()
         self.settings = Setting()
-        self.subtitlelanguage = self.settings.get_kodi_setting('locale.subtitlelanguage')
+        self.set_subtitlelanguages()
                     
     def __enter__(self):
         return self
 
-    def set_language(self):
-        self.set_language_properties(self.subtitlelanguage)
-    
-    def reset_language(self):
-        self.set_language_properties("")
+    def set_subtitlelanguages(self):
+        self.language_full = self.settings.get_kodi_setting('locale.subtitlelanguage')
 
-    def set_language_properties(self, lan):
-        if lan == "Portuguese (Brazil)":
-            self.preferredsub = "pob"
-        elif lan == "Greek":
-            self.preferredsub = "ell"
-        elif lan == "":
-            self.preferredsub = ""
+        if self.language_full != "":
+            self.language_iso_639_1 = ""
+            self.language_iso_639_2 = ""
+            self.language_iso_639_2t = ""
+            self.language_iso_639_2b = ""
         else:
-            self.preferredsub = xbmc.convertLanguage(lan, xbmc.ISO_639_2)
+            self.language_iso_639_1 = kodi.convert_language(lan, xbmc.ISO_639_1)
 
-        if lan =="":
-            language_iso_639_1 = ""
-            language_iso_639_2t = ""
-            language_iso_639_2b = ""
-        
-        else:
-            language_iso_639_1 = xbmc.convertLanguage(lan, xbmc.ISO_639_1)
-            language_iso_639_2t = self.get_ISO_639_2_T(self.preferredsub)
-            language_iso_639_2b = self.get_ISO_639_2_B(self.preferredsub)
-        
-        with Properties() as properties:
-            properties.set_property('skinsubtitlechecker.language.full', lan)
-            properties.set_property('skinsubtitlechecker.language.iso_639_1', language_iso_639_1)
-            properties.set_property('skinsubtitlechecker.language.iso_639_2t', language_iso_639_2t)
-            properties.set_property('skinsubtitlechecker.language.iso_639_2b', language_iso_639_2b)
-            properties.set_property('skinsubtitlechecker.language.iso_639_2_kodi', self.preferredsub)
-            
+            if self.language_full == "Portuguese (Brazil)":
+                self.language_iso_639_2 = "pob"
+            elif self.language_full == "Greek":
+                self.language_iso_639_2 = "ell"
+            else:
+                self.language_iso_639_2 = xbmc.convertLanguage(lan, xbmc.ISO_639_2)
+       
+            self.language_iso_639_2t = self.get_ISO_639_2_T(self.language_iso_639_2)
+            self.language_iso_639_2b = self.get_ISO_639_2_B(self.language_iso_639_2)
+
     def get_ISO_639_2_B(self, iso_639_2_code):
         for x in self.languages:
             if iso_639_2_code == x[2] or iso_639_2_code == x[3]:
@@ -59,11 +45,17 @@ class Language:
         self.settings.__exit__(exc_type, exc_value, traceback)
 
         self.settings=None
-        self.preferredsub = None
+        self.language_iso_639_2 = None
         self.languages = None
+        self.language_iso_639_1 = None
+        self.language_iso_639_2t = None
+        self.language_iso_639_2b = None
         del self.preferredsub
         del self.languages
         del self.settings
+        del self.language_iso_639_1
+        del self.language_iso_639_2t
+        del self.language_iso_639_2b
 
     def init_languages(self):
        self.languages = (

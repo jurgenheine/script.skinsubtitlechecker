@@ -1,7 +1,6 @@
 import os
 import time
-import xbmcvfs
-from lib import helpers
+from lib import kodi
 from lib.setting import Setting
 from sqlite3 import dbapi2
 from sqlite3 import OperationalError as OperationalError
@@ -18,10 +17,10 @@ class DBConnection():
     def __init__(self):
         self.db = None
         self.settings = Setting()
-        db_dir = helpers.translate_path("special://database")
+        db_dir = kodi.translate_path("special://database")
         self.db_path = os.path.join(db_dir, 'subtitlecheckercache.db')
         self.db_lib = dbapi2
-        if not xbmcvfs.exists(self.db_path):
+        if not kodi.file_exists(self.db_path):
                 self.create_db()
         else:
             self.__connect_to_db()
@@ -65,24 +64,24 @@ class DBConnection():
             createddate = time.ctime(created)
             age = now - created
             if age < limit_not_found and subtitle_present < 1:
-                helpers.log(__name__, 'DB Cache: Item: %s, Cache Hit: True, created: %s, age: %s hour, limit: False' % (item, createddate, (now - created)/ 3600), helpers.LOGDEBUG)
+                kodi.log(__name__, 'DB Cache: Item: %s, Cache Hit: True, created: %s, age: %s hour, limit: False' % (item, createddate, (now - created)/ 3600), kodi.LOGDEBUG)
                 return subtitle_present
             elif age < limit_found and subtitle_present == 1:
-                helpers.log(__name__, 'DB Cache: Item: %s, Cache Hit: True, created: %s, age: %s days, limit: False' % (item, createddate, (now - created)/ 3600/ 24), helpers.LOGDEBUG)
+                kodi.log(__name__, 'DB Cache: Item: %s, Cache Hit: True, created: %s, age: %s days, limit: False' % (item, createddate, (now - created)/ 3600/ 24), kodi.LOGDEBUG)
                 return subtitle_present
             elif age >= limit_found and subtitle_present == 1:
-                helpers.log(__name__, 'DB Cache: Item: %s, Cache Hit: True, created: %s, age: %s days, limit: True' % (item, createddate, (now - created)/ 3600/ 24), helpers.LOGDEBUG)
+                kodi.log(__name__, 'DB Cache: Item: %s, Cache Hit: True, created: %s, age: %s days, limit: True' % (item, createddate, (now - created)/ 3600/ 24), kodi.LOGDEBUG)
                 self.delete_cached_url(item)
             else:
-                helpers.log(__name__, 'DB Cache: Item: %s, Cache Hit: True, created: %s, age: %s, limit: True' % (item, createddate, (now - created)/ 3600), helpers.LOGDEBUG)
+                kodi.log(__name__, 'DB Cache: Item: %s, Cache Hit: True, created: %s, age: %s, limit: True' % (item, createddate, (now - created)/ 3600), kodi.LOGDEBUG)
                 self.delete_cached_url(item)
         else:
-            helpers.log(__name__, 'DB Cache: Item: %s, Cache Hit: False' % (item), helpers.LOGDEBUG)
+            kodi.log(__name__, 'DB Cache: Item: %s, Cache Hit: False' % (item), kodi.LOGDEBUG)
         return -1
    
     # intended to be a common method for creating a db from scratch
     def init_database(self):
-        helpers.log(__name__, 'Building Subtitle checker Database', helpers.LOGDEBUG)
+        kodi.log(__name__, 'Building Subtitle checker Database', kodi.LOGDEBUG)
             
         self.__execute('PRAGMA journal_mode=WAL')
         self.__execute('CREATE TABLE IF NOT EXISTS subtitle_cache (year TEXT, season TEXT, episode TEXT, tvshow TEXT, title TEXT, filename TEXT, subtitle INTEGER, timestamp, PRIMARY KEY(year, season, episode, tvshow, title, filename))')
@@ -114,7 +113,7 @@ class DBConnection():
         while True:
             try:
                 cur = self.db.cursor()
-#                 helpers.log(__name__, 'Running: %s with %s' % (sql, params), helpers.LOGDEBUG)
+#                 kodi.log(__name__, 'Running: %s with %s' % (sql, params), kodi.LOGDEBUG)
                 cur.execute(sql, params)
                 if sql[:6].upper() == 'SELECT' or sql[:4].upper() == 'SHOW':
                     rows = cur.fetchall()
@@ -124,7 +123,7 @@ class DBConnection():
             except OperationalError as e:
                 if tries < MAX_TRIES:
                     tries += 1
-                    helpers.log(__name__, 'Retrying (%s/%s) SQL: %s Error: %s' % (tries, MAX_TRIES, sql, e), helpers.LOGWARNING)
+                    kodi.log(__name__, 'Retrying (%s/%s) SQL: %s Error: %s' % (tries, MAX_TRIES, sql, e), kodi.LOGWARNING)
                     self.db = None
                     self.__connect_to_db()
                 elif any(s for s in ['no such table', 'no such column'] if s in str(e)):

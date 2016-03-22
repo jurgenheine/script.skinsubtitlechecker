@@ -35,14 +35,17 @@
   <ItemGroup>
     <Compile Include="default.py" />
     <Compile Include="lib\db_utils.py" />
-    <Compile Include="lib\helpers.py" />
+    <Compile Include="lib\kodi.py" />
     <Compile Include="lib\language.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="lib\properties.py">
+    <Compile Include="lib\videogui.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="lib\setting.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\videoitem.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="lib\__init__.py" />

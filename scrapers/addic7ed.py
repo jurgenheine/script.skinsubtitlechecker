@@ -7,8 +7,7 @@ import re
 import socket
 import string
 from BeautifulSoup import BeautifulSoup
-from lib.helpers import log, get_script_path, get_clean_movie_title, LOGNOTICE
-
+from lib import kodi
 
 class Adic7edServer:
     def __init__(self, *args, **kwargs):
@@ -43,7 +42,7 @@ class Adic7edServer:
     # This will probably grow to be a hardcoded colleciton over time. 
     @staticmethod
     def addic7ize(title):
-        addic7ize_dict = eval(open(get_script_path() + '/addic7ed_dict.txt').read())
+        addic7ize_dict = eval(open(kodi.get_script_path() + '/addic7ed_dict.txt').read())
         return addic7ize_dict.get(title, title)
     
     def query_tv_show(self, name, season, episode, langs):
@@ -58,7 +57,7 @@ class Adic7edServer:
 
     def query(self, searchurl, langs):
         
-        log(__name__, "Search URL - %s" % searchurl)
+        kodi.log(__name__, "Search URL - %s" % searchurl)
         socket.setdefaulttimeout(10)
         request = urllib2.Request(searchurl, headers=self.req_headers)
         request.add_header('Pragma', 'no-cache')
@@ -84,14 +83,14 @@ class Adic7edServer:
                 if status == "Completed" and lang['3let'] != '' and (lang['3let'] in langs):
                     return 1
             except Exception as ex:
-                log(__name__, "ERROR IN BS: %s" % str(ex))
+                kodi.log(__name__, "ERROR IN BS: %s" % str(ex))
                 pass
         
         return 0
    
     def search_filename(self, filename, languages):
-        title, year = get_clean_movie_title(filename)
-        log(__name__, "clean title: \"%s\" (%s)" % (title, year))
+        title, year = kodi.get_clean_movie_title(filename)
+        kodi.log(__name__, "clean title: \"%s\" (%s)" % (title, year))
         try:
             yearval = int(year)
         except ValueError:
@@ -121,7 +120,7 @@ class Adic7edServer:
             else:
                 return self.search_filename(item['filename'], item['3let_language'])
         except:
-            log(__name__, "failed to connect to Addic7ed service for subtitle search", LOGNOTICE)
+            kodi.log(__name__, "failed to connect to Addic7ed service for subtitle search", kodi.LOGNOTICE)
             return -1
         
     @staticmethod

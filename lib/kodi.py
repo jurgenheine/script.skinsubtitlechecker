@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*- 
 import xbmc
+import xbmcgui
 import xbmcaddon
+import xbmcvfs
 import unicodedata
-from json import loads
 
 __addon__ = xbmcaddon.Addon()
 __scriptname__ = __addon__.getAddonInfo('name')
 __version__ = __addon__.getAddonInfo('version')
 __cwd__ = xbmc.translatePath(__addon__.getAddonInfo('path')).decode("utf-8")
+__monitor__ = xbmc.Monitor()
 
 LOGDEBUG = xbmc.LOGDEBUG
 LOGERROR = xbmc.LOGERROR
@@ -51,5 +53,40 @@ def get_script_path():
     return __cwd__
 
 
+def convert_language(language, format):
+    return xbmc.convertLanguage(language,format)
+
+
 def get_clean_movie_title(path, usefoldername=False):
     return xbmc.getCleanMovieTitle(path, usefoldername)
+
+
+def get_condition_visibility(value):
+    return xbmc.getCondVisibility(value)
+
+
+def get_window(id):
+    return xbmcgui.Window(id)
+
+
+def get_info_label(name):
+    return xbmc.getInfoLabel(name)
+
+
+def abort_requested():
+    return  __monitor__.abortRequested()
+
+
+def sleep( time):
+    xbmc.sleep(time)
+
+
+def wait_for_abort(time):
+    return __monitor__.waitForAbort(time)
+
+def file_exists(path):
+    return xbmcvfs.exists(path)
+
+
+def execute_json_rpc(jsonrpccommand):
+    return xbmc.executeJSONRPC(jsonrpccommand)

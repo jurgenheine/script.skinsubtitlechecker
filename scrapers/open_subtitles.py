@@ -2,7 +2,7 @@
 # Based on contents from https://github.com/amet/service.subtitles.opensubtitles
 
 import xmlrpclib
-from lib.helpers import log, get_version, LOGNOTICE
+from lib import kodi
 from lib.setting import Setting
 
 __scriptname__ = "XBMC Subtitles"
@@ -23,7 +23,7 @@ class OSDBServer:
         try:
             server = xmlrpclib.Server( self.base_url, verbose=0 )
             with Setting as setting:
-                login = server.LogIn(setting.get_setting( "OSuser" ), setting.get_setting( "OSpass" ), "en", "%s_v%s" %(__scriptname__.replace(" ","_"),get_version()))
+                login = server.LogIn(setting.get_setting( "OSuser" ), setting.get_setting( "OSpass" ), "en", "%s_v%s" %(__scriptname__.replace(" ","_"),kodi.get_version()))
             osdb_token  = login[ "token" ]
             
             if ( osdb_token ) :
@@ -37,7 +37,7 @@ class OSDBServer:
                 else:
                     OS_search_string = item['title'].replace(" ","+")
                 
-                log( __name__ , "Search String [ %s ]" % (OS_search_string,))
+                kodi.log( __name__ , "Search String [ %s ]" % (OS_search_string,))
         
                 searchlist = [{'sublanguageid':",".join(item['3let_language']),
                                'query'        :OS_search_string
@@ -49,5 +49,5 @@ class OSDBServer:
                     return 1
             return 0
         except:
-            log(__name__, "failed to connect to Opensubtitles service for subtitle search", LOGNOTICE)
+            kodi.log(__name__, "failed to connect to Opensubtitles service for subtitle search", kodi.LOGNOTICE)
             return -1

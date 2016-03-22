@@ -1,23 +1,20 @@
 import xbmc
 import xbmcaddon
 from json import loads
+from lib import kodi
 
 class Setting:
     def __init__(self):
-        self.addon = xbmcaddon.Addon()
-        self.cwd = xbmc.translatePath(self.addon.getAddonInfo('path')).decode("utf-8")
+        pass
                     
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.addon = None
-        self.cwd =None
-        del self.addon
-        del self.cwd
+        pass       
 
     def get_setting(self, name):
-        return self.addon.getSetting(name)
+        return kodi.__addon__.getSetting(name)
 
     def get_cache_not_found_timeout(self):
         cachetimenotfound = self.get_setting("CacheTimeNotFound")
@@ -32,7 +29,7 @@ class Setting:
         return 60 * 60 * 24 * float(cachetimefound)
 
     def get_script_path(self):
-        return self.cwd
+        return kodi.__cwd__
 
     def get_kodi_setting(self, name):
         """
@@ -46,7 +43,7 @@ class Setting:
         "setting": "%s"
     }
 }'''
-        result = xbmc.executeJSONRPC(command % name)
+        result = kodi.execute_json_rpc(command % name)
         py = loads(result)
         if 'result' in py and 'value' in py['result']:
             return py['result']['value']
