@@ -26,7 +26,7 @@ class SubtitleChecker:
     def _init_vars(self):
         self.settings = Setting()
         self.language = Language()
-        self.videogui = VideoGui()
+        self.gui = VideoGui()
         self.videoitem = VideoItem()
         self.stop = False
         self.db = None
@@ -62,13 +62,13 @@ class SubtitleChecker:
         if self.flush_cache:
             self.execute_flush_cache()
             
-        elif self.videogui.property_videolibrary_empty("skinsubtitlechecker.backend_running"):
+        elif self.gui.property_videolibrary_empty("skinsubtitlechecker.backend_running"):
             self.prepare_run()
             
             if self.backend:
                 kodi.log(__name__, 'Start running background.', kodi.LOGNOTICE)
                 # run in back-end if parameter was set
-                self.videogui.set_videolibrary_property("skinsubtitlechecker.backend_running","true")
+                self.gui.set_videolibrary_property("skinsubtitlechecker.backend_running","true")
                 self.set_subtitle_properties(None)
                 self.run_backend()
             else:
@@ -95,23 +95,22 @@ class SubtitleChecker:
         while not self.stop:
             if self.subtitlecheck_needed():
                 self.check_subtitlte()
-            kodi.sleep(200)
+            else:
+                kodi.sleep(200)
             self.check_stop_backend()
     
     def subtitlecheck_needed(self):
-        if not self.videogui.is_scrolling() and (self.videogui.is_movie() or self.videogui.is_episode()):
+        if not self.gui.is_scrolling() and (self.gui.is_movie() or self.gui.is_episode()):
             return self.videoitem.current_item_changed(self.language.language_iso_639_2)
-         
-        # clear subtitle check if not movie or episode or if scrolling
-        self.set_subtitle_properties(None)
-        return False
+        else: 
+            # clear subtitle check if not movie or episode or if scrolling
+            self.set_subtitle_properties(None)
+            return False
 
     def check_stop_backend(self):
-        if not self.videogui.videolibray_is_visible():
+        if not self.gui.videolibray_is_visible() or kodi.abort_requested():
             kodi.log(__name__, 'back-end stopped.', kodi.LOGNOTICE)
-            self.videogui.clear_videolibrary_property("skinsubtitlechecker.backend_running")
-            self.stop = True
-        if kodi.abort_requested():
+            self.gui.clear_videolibrary_property("skinsubtitlechecker.backend_running")
             self.stop = True
     
     def check_subtitlte(self):
@@ -147,31 +146,31 @@ class SubtitleChecker:
 
     def set_subtitle_properties(self, subtitle_present):
         if subtitle_present == -1:
-            self.videogui.set_property('skinsubtitlechecker.available', self.search_text)
+            self.gui.set_property('skinsubtitlechecker.available', self.search_text)
         elif subtitle_present == 1:
             kodi.log(__name__, 'subtitle found.')
-            self.videogui.set_property('skinsubtitlechecker.available', self.present_text)
+            self.gui.set_property('skinsubtitlechecker.available', self.present_text)
         elif subtitle_present == 0:
             kodi.log(__name__, 'no subtitle found')
-            self.videogui.set_property('skinsubtitlechecker.available', self.not_present_text)
+            self.gui.set_property('skinsubtitlechecker.available', self.not_present_text)
         else:
             kodi.log(__name__, 'no subtitle search for item')
-            self.videogui.set_property('skinsubtitlechecker.available', '')
+            self.gui.set_property('skinsubtitlechecker.available', '')
         self.set_language(subtitle_present)
 
     def set_language(self, subtitle_present):
         if(subtitle_present is not None):
-            self.videogui.set_property('skinsubtitlechecker.language.full', self.language.language_full)
-            self.videogui.set_property('skinsubtitlechecker.language.iso_639_1', self.language.language_iso_639_1)
-            self.videogui.set_property('skinsubtitlechecker.language.iso_639_2t', self.language.language_iso_639_2t)
-            self.videogui.set_property('skinsubtitlechecker.language.iso_639_2b', self.language.language_iso_639_2b)
-            self.videogui.set_property('skinsubtitlechecker.language.iso_639_2_kodi', self.language.language_iso_639_2)
+            self.gui.set_property('skinsubtitlechecker.language.full', self.language.language_full)
+            self.gui.set_property('skinsubtitlechecker.language.iso_639_1', self.language.language_iso_639_1)
+            self.gui.set_property('skinsubtitlechecker.language.iso_639_2t', self.language.language_iso_639_2t)
+            self.gui.set_property('skinsubtitlechecker.language.iso_639_2b', self.language.language_iso_639_2b)
+            self.gui.set_property('skinsubtitlechecker.language.iso_639_2_kodi', self.language.language_iso_639_2)
         else:
-            self.videogui.set_property('skinsubtitlechecker.language.full', "")
-            self.videogui.set_property('skinsubtitlechecker.language.iso_639_1', "")
-            self.videogui.set_property('skinsubtitlechecker.language.iso_639_2t', "")
-            self.videogui.set_property('skinsubtitlechecker.language.iso_639_2b', "")
-            self.videogui.set_property('skinsubtitlechecker.language.iso_639_2_kodi', "")
+            self.gui.set_property('skinsubtitlechecker.language.full', "")
+            self.gui.set_property('skinsubtitlechecker.language.iso_639_1', "")
+            self.gui.set_property('skinsubtitlechecker.language.iso_639_2t', "")
+            self.gui.set_property('skinsubtitlechecker.language.iso_639_2b', "")
+            self.gui.set_property('skinsubtitlechecker.language.iso_639_2_kodi', "")
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.backend = None
@@ -190,7 +189,7 @@ class SubtitleChecker:
             pass
         self.settings.__exit__(exc_type, exc_value, traceback)
         self.language.__exit__(exc_type, exc_value, traceback)
-        self.videogui.__exit__(exc_type, exc_value, traceback)
+        self.gui.__exit__(exc_type, exc_value, traceback)
         self.videoitem.__exit__(exc_type, exc_value, traceback)
 
         # clean variables
@@ -202,7 +201,7 @@ class SubtitleChecker:
         self._stop = None
         self.settings = None
         self.language = None
-        self.videogui = None
+        self.gui = None
 
         #delete pointers to variables
         del self.flush_cache
@@ -213,7 +212,7 @@ class SubtitleChecker:
         del self._stop
         del self.settings
         del self.language
-        del self.videogui
+        del self.gui
 
 if __name__ == "__main__":
     with SubtitleChecker() as subtitlechecker:

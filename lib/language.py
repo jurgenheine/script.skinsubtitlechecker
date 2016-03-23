@@ -11,22 +11,24 @@ class Language:
         return self
 
     def set_subtitlelanguages(self):
-        self.language_full = self.settings.get_kodi_setting('locale.subtitlelanguage')
+        lan = self.settings.get_kodi_setting('locale.subtitlelanguage')
 
-        if self.language_full != "":
+        if lan == "":
+            self.language_full = ""
             self.language_iso_639_1 = ""
             self.language_iso_639_2 = ""
             self.language_iso_639_2t = ""
             self.language_iso_639_2b = ""
         else:
-            self.language_iso_639_1 = kodi.convert_language(lan, xbmc.ISO_639_1)
+            self.language_full = kodi.convert_language(lan, kodi.ENGLISH_NAME)
+            self.language_iso_639_1 = kodi.convert_language(self.language_full, kodi.ISO_639_1)
 
             if self.language_full == "Portuguese (Brazil)":
                 self.language_iso_639_2 = "pob"
             elif self.language_full == "Greek":
                 self.language_iso_639_2 = "ell"
             else:
-                self.language_iso_639_2 = xbmc.convertLanguage(lan, xbmc.ISO_639_2)
+                self.language_iso_639_2 = kodi.convert_language(self.language_full, kodi.ISO_639_2)
        
             self.language_iso_639_2t = self.get_ISO_639_2_T(self.language_iso_639_2)
             self.language_iso_639_2b = self.get_ISO_639_2_B(self.language_iso_639_2)

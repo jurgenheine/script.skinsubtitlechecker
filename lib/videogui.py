@@ -16,9 +16,11 @@ class VideoGui:
         self.set_dialogvideoinfo_property(name, value)
 
     def set_videolibrary_property(self, name, value):
+        kodi.log(__name__,'set videolibray property %s with %s' %(name, value))
         self.window.setProperty(name, value)
 
     def set_dialogvideoinfo_property(self, name, value):
+        kodi.log(__name__,'set video dialog property %s with %s' %(name, value))
         self.dialogwindow.setProperty(name, value)
 
     def clear_videolibrary_property(self, name):
