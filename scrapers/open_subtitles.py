@@ -22,8 +22,8 @@ class OSDBServer:
     def searchsubtitles( self, item):
         try:
             server = xmlrpclib.Server( self.base_url, verbose=0 )
-            with Setting as setting:
-                login = server.LogIn(setting.get_setting( "OSuser" ), setting.get_setting( "OSpass" ), "en", "%s_v%s" %(__scriptname__.replace(" ","_"),kodi.get_version()))
+            setting =Setting()
+            login = server.LogIn(setting.get_setting( "OSuser" ), setting.get_setting( "OSpass" ), "en", "%s_v%s" %(__scriptname__.replace(" ","_"),kodi.get_version()))
             osdb_token  = login[ "token" ]
             
             if ( osdb_token ) :
@@ -48,6 +48,7 @@ class OSDBServer:
                 if search["data"]:
                     return 1
             return 0
-        except:
+        except Exception as e:
             kodi.log(__name__, "failed to connect to Opensubtitles service for subtitle search", kodi.LOGNOTICE)
+            kodi.log(__name__, "Opensubtitles error:" + str(e))
             return -1
