@@ -135,7 +135,7 @@ class SubtitleChecker:
                             kodi.log(__name__, 'start search Podnapisi.')
                             subtitle_present = pnserver.searchsubtitles(self.videoitem.item)
                 
-                if subtitle_present >= 0:
+                if subtitle_present ==1:
                     break
             # store result to cache
             if subtitle_present >= 0:
