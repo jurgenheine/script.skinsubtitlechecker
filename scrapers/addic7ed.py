@@ -42,7 +42,7 @@ class Adic7edServer:
     # This will probably grow to be a hardcoded colleciton over time. 
     @staticmethod
     def addic7ize(title):
-        addic7ize_dict = eval(open(kodi.get_script_path() + '/addic7ed_dict.txt').read())
+        addic7ize_dict = eval(open(kodi.get_script_path()+ '/resources' + '/addic7ed_dict.txt').read())
         return addic7ize_dict.get(title, title)
     
     def query_tv_show(self, name, season, episode, langs):

@@ -21,12 +21,14 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="addic7ed_dict.txt" />
+    <Content Include=".gitattributes" />
+    <Content Include=".gitignore" />
     <Content Include="addon.xml" />
     <Content Include="changelog.txt" />
     <Content Include="fanart.jpg" />
     <Content Include="icon.png" />
     <Content Include="LICENSE.txt" />
+    <Content Include="README.md" />
     <Content Include="resources\addic7ed_dict.txt" />
     <Content Include="resources\language\Dutch\strings.po" />
     <Content Include="resources\language\English\strings.po" />

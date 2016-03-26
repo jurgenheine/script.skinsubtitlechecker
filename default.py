@@ -1,6 +1,8 @@
 # -*- coding: UTF-8 -*-
 
 import sys
+import Queue as queue
+import threading, time, random
 from operator import itemgetter
 from scrapers.open_subtitles import OSDBServer
 from scrapers.addic7ed import Adic7edServer
@@ -85,10 +87,13 @@ class SubtitleChecker:
     
     def prepare_run(self):
         self.db = DBConnection()
-        self.scrapers = sorted([('opensubtitle', int(self.settings.get_setting("OSpriority")), bool(self.settings.get_setting("OSenabled"))),
-                                ('addic7ed', int(self.settings.get_setting("A7priority")), bool(self.settings.get_setting("A7enabled"))),
-                                ('podnapisi', int(self.settings.get_setting("PNpriority")), bool(self.settings.get_setting("PNenabled")))],
-                               key=itemgetter(2))
+        self.scrapers = []
+        if(bool(self.settings.get_setting("OSenabled"))):
+            self.scrapers.append('opensubtitle')
+        if(bool(self.settings.get_setting("A7enabled"))):
+            self.scrapers.append('addic7ed')
+        if(bool(self.settings.get_setting("PNenabled"))):
+            self.scrapers.append('podnapisi')
 
     def run_backend(self):
         self.stop = False
@@ -120,29 +125,49 @@ class SubtitleChecker:
         subtitle_present = self.db.get_cached_subtitle(self.videoitem.item)
         if subtitle_present == -1:
             # only check if not found in cache, no subtitle is a result
+            result_queue = queue.Queue()
+            thread_count =0 # number of threads started,needed to determine max queue results
+            
+            #start the threads
             for scraper in self.scrapers:
-                if scraper[2]:
-                    if scraper[0] == 'opensubtitle':
-                        with OSDBServer()as osdbserver:
-                            kodi.log(__name__, 'start search Opensubtitle.')
-                            subtitle_present = osdbserver.searchsubtitles(self.videoitem.item)
-                    elif scraper[0] == 'addic7ed':
-                        with Adic7edServer()as adic7edserver:
-                            kodi.log(__name__, 'start search Addic7ed.')
-                            subtitle_present = adic7edserver.searchsubtitles(self.videoitem.item)
-                    elif scraper[0] == 'podnapisi':
-                        with PNServer()as pnserver:
-                            kodi.log(__name__, 'start search Podnapisi.')
-                            subtitle_present = pnserver.searchsubtitles(self.videoitem.item)
+                thread = threading.Thread(target=self.check_subtitle_process, args=(scraper, result_queue))
+                thread.daemon=True
+                thread_count+=1
+                thread.start()
+            
+            # wait for the first subtitle found or if all checks are negative
+            for x in range(0, thread_count):
+                current_subtitle_present = result_queue.get()
+                if current_subtitle_present >= 0:
+                    # result returned, set to subtitle present property, ignore error result
+                    subtitle_present =current_subtitle_present
                 
-                if subtitle_present ==1:
+                # check if subtitle is found
+                if current_subtitle_present == 1:
+                    #subtitle found, other results can be ignored
                     break
+                
             # store result to cache
             if subtitle_present >= 0:
                 kodi.log(__name__, 'cache item')
                 self.db.cache_subtitle(self.videoitem.item, subtitle_present)
-            
+        
+        # set data to gui properties    
         self.set_subtitle_properties(subtitle_present)
+
+    def check_subtitle_process(self, name, result_queue):
+        if name == 'opensubtitle':
+            with OSDBServer()as osdbserver:
+                kodi.log(__name__, 'start search Opensubtitle.')
+                result_queue.put(osdbserver.searchsubtitles(self.videoitem.item))
+        elif name == 'addic7ed':
+            with Adic7edServer()as adic7edserver:
+                kodi.log(__name__, 'start search Addic7ed.')
+                result_queue.put(adic7edserver.searchsubtitles(self.videoitem.item))
+        elif name == 'podnapisi':
+            with PNServer()as pnserver:
+                kodi.log(__name__, 'start search Podnapisi.')
+                result_queue.put(pnserver.searchsubtitles(self.videoitem.item))
 
     def set_subtitle_properties(self, subtitle_present):
         if subtitle_present == -1:
