@@ -20,7 +20,7 @@ class Language:
         if(lan != ""):
             self.searchlanguages.append(self.get_ISO_639_2(lan))
 
-        for lang in self.settings.get_kodi_setting('subtitles.languages').split(","):
+        for lang in self.settings.get_kodi_setting('subtitles.languages'):
             if( lang !="" and lang not in self.searchlanguages):
                 #add language if not empty and not already exist
                 self.searchlanguages.append(self.get_ISO_639_2(lang))
@@ -48,12 +48,12 @@ class Language:
             return kodi.convert_language(language, kodi.ISO_639_2)
 
     def get_english_name(self, iso_639_2_code):
-        if language == "pob":
+        if iso_639_2_code == "pob":
             return "Portuguese (Brazil)"
-        elif language == "ell":
+        elif iso_639_2_code == "ell":
             return "Greek"
         else:
-            return kodi.convert_language(language, kodi.ENGLISH_NAME)
+            return kodi.convert_language(iso_639_2_code, kodi.ENGLISH_NAME)
 
     def get_ISO_639_2_B(self, iso_639_2_code):
         for x in self.languages:
