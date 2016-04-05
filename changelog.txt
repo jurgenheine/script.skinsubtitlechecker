@@ -1,3 +1,6 @@
+v 0.13
+Fix critical error for fresh systems
+
 v 0.12
 Change to multi threaded search if not found in cache
 

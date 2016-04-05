@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*- 
+import os
 import xbmc
 import xbmcgui
 import xbmcaddon
@@ -87,8 +88,20 @@ def sleep( time):
 def wait_for_abort(time):
     return __monitor__.waitForAbort(time)
 
+
 def file_exists(path):
     return xbmcvfs.exists(path)
+
+
+def mkdirs(path):
+    try:
+        xbmcvfs.mkdirs(path)
+    except:
+        os.mkdir(path)
+
+
+def dirname(path):
+    return os.path.dirname(path)
 
 
 def execute_json_rpc(jsonrpccommand):

@@ -136,12 +136,9 @@ class DBConnection():
                 raise DatabaseRecoveryError(e)
 
     def __create_sqlite_db(self):
-        if not xbmcvfs.exists(os.path.dirname(self.db_path)):
-            try:
-                xbmcvfs.mkdirs(os.path.dirname(self.db_path))
-            except:
-                os.mkdir(os.path.dirname(self.db_path))
-
+        if not kodi.file_exists(kodi.dirname(self.db_path)):
+            kodi.mkdirs(kodi.dirname(self.db_path))
+            
     def __connect_to_db(self):
         if not self.db:
             self.db = self.db_lib.connect(self.db_path)
