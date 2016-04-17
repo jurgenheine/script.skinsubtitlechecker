@@ -1,10 +1,9 @@
-from lib import kodi
-from lib.setting import Setting
+import kodi
+from setting import Setting
  
 class Language:
     def __init__(self):
         self.init_languages()
-        self.settings = Setting()
         self.set_searchlanguages()
         if(self.searchlanguages.count>0):
             self.set_subtitlelanguages(self.searchlanguages[0])
@@ -15,12 +14,15 @@ class Language:
         return self
 
     def set_searchlanguages(self):
-        lan = self.settings.get_kodi_setting('locale.subtitlelanguage')
+        with Setting() as settings:
+            lan = settings.get_kodi_setting('locale.subtitlelanguage')
+            langs= settings.get_kodi_setting('subtitles.languages')
+        
         self.searchlanguages = []
         if(lan != ""):
             self.searchlanguages.append(self.get_ISO_639_2(lan))
 
-        for lang in self.settings.get_kodi_setting('subtitles.languages'):
+        for lang in langs:
             if( lang !="" and lang not in self.searchlanguages):
                 #add language if not empty and not already exist
                 self.searchlanguages.append(self.get_ISO_639_2(lang))
@@ -68,9 +70,6 @@ class Language:
         return iso_639_2_code
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.settings.__exit__(exc_type, exc_value, traceback)
-
-        self.settings=None
         self.preferedsub= None
         self.language_iso_639_2 = None
         self.languages = None
@@ -82,7 +81,6 @@ class Language:
         del self.preferedsub
         del self.language_iso_639_2
         del self.languages
-        del self.settings
         del self.language_iso_639_1
         del self.language_iso_639_2t
         del self.language_iso_639_2b

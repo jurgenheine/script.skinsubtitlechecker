@@ -1,4 +1,4 @@
-from lib import kodi
+import kodi
 
 class VideoItem:
 

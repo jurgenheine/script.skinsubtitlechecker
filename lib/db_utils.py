@@ -1,7 +1,7 @@
 import os
 import time
-from lib import kodi
-from lib.setting import Setting
+import kodi
+from setting import Setting
 from sqlite3 import dbapi2
 from sqlite3 import OperationalError as OperationalError
 from sqlite3 import DatabaseError as DatabaseError

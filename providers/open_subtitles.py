@@ -2,8 +2,9 @@
 # Based on contents from https://github.com/amet/service.subtitles.opensubtitles
 
 import xmlrpclib
-from lib import kodi
-from lib.setting import Setting
+import kodi
+from setting import Setting
+from subtitleresult import SubtitleResult
 
 __scriptname__ = "XBMC Subtitles"
 
@@ -46,9 +47,9 @@ class OSDBServer:
                 search = server.SearchSubtitles( osdb_token, searchlist )
                 server.__close()
                 if search["data"]:
-                    return 1
-            return 0
+                    return SubtitleResult.AVAILABLE
+            return SubtitleResult.NOT_AVAILABLE
         except Exception as e:
             kodi.log(__name__, "failed to connect to Opensubtitles service for subtitle search", kodi.LOGNOTICE)
             kodi.log(__name__, "Opensubtitles error:" + str(e))
-            return -1
+            return SubtitleResult.NOT_AVAILABLE

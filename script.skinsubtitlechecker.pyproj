@@ -6,7 +6,7 @@
     <ProjectGuid>{7a12b6f5-4b65-43c2-b4e1-2461d76d7d70}</ProjectGuid>
     <ProjectHome />
     <StartupFile>default.py</StartupFile>
-    <SearchPath>..\..\KodiStubs\;..\..\..\..\AppData\Roaming\Kodi\addons\script.module.beautifulsoup\lib\</SearchPath>
+    <SearchPath>..\..\KodiStubs\;..\..\..\..\AppData\Roaming\Kodi\addons\script.module.beautifulsoup\lib\;..\script.module.skinsubtitlechecker\lib\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
@@ -37,33 +37,32 @@
   <ItemGroup>
     <Compile Include="default.py" />
     <Compile Include="lib\db_utils.py" />
-    <Compile Include="lib\kodi.py" />
     <Compile Include="lib\language.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="lib\videogui.py">
+    <Compile Include="lib\subtitlechecker.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="lib\setting.py">
+    <Compile Include="lib\videogui.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="lib\videoitem.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="lib\__init__.py" />
-    <Compile Include="scrapers\addic7ed.py" />
-    <Compile Include="scrapers\open_subtitles.py" />
-    <Compile Include="scrapers\podnapisi.py" />
-    <Compile Include="scrapers\__init__.py" />
+    <Compile Include="providers\addic7ed.py" />
+    <Compile Include="providers\open_subtitles.py" />
+    <Compile Include="providers\podnapisi.py" />
+    <Compile Include="providers\__init__.py" />
     <Compile Include="service.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="lib" />
+    <Folder Include="lib\" />
     <Folder Include="resources" />
     <Folder Include="resources\language\" />
     <Folder Include="resources\language\Dutch\" />
     <Folder Include="resources\language\English\" />
-    <Folder Include="scrapers" />
+    <Folder Include="providers\" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />

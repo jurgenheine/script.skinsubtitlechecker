@@ -18,6 +18,6 @@
     <category label="32009">
       <setting label="32010" type="number" id="CacheTimeNotFound" default="2"/>
       <setting label="32011" type="number" id="CacheTimeFound" default="30"/>
-      <setting label="32012" type="action" action="RunScript(script.skinsubtitlechecker, flushcache=True)"/>
+      <setting label="32012" type="action" action="RunScript(script.skinsubtitlechecker, action=flushcache)"/>
     </category>
 </settings>

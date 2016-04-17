@@ -3,8 +3,8 @@
 
 from xml.dom import minidom
 import urllib
-from lib import kodi
-
+import kodi
+from subtitleresult import SubtitleResult
 
 class PNServer:
     
@@ -43,11 +43,11 @@ class PNServer:
                 subtitles = self.fetch(url)
                 
                 if subtitles:
-                    return 1
-            return 0
+                    return SubtitleResult.AVAILABLE
+            return SubtitleResult.NOT_AVAILABLE
         except:
             kodi.log(__name__, "failed to connect to Podnapisi service for subtitle search", kodi.LOGNOTICE)
-            return -1
+            return SubtitleResult.NOT_AVAILABLE
   
     def fetch(self,url):
         socket = urllib.urlopen( url )

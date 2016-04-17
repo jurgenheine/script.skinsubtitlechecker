@@ -1,6 +1,6 @@
-from lib import kodi
+import kodi
 from lib.db_utils import DBConnection
-from lib.setting import Setting
+from setting import Setting
 
 class Service:
     def __init__(self):

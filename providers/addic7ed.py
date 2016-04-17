@@ -7,7 +7,8 @@ import re
 import socket
 import string
 from BeautifulSoup import BeautifulSoup
-from lib import kodi
+from subtitleresult import SubtitleResult
+import kodi
 
 class Adic7edServer:
     def __init__(self, *args, **kwargs):
@@ -81,12 +82,12 @@ class Adic7edServer:
                 status = statustd.find("b").string.strip()
                 
                 if status == "Completed" and lang['3let'] != '' and (lang['3let'] in langs):
-                    return 1
+                    return SubtitleResult.AVAILABLE
             except Exception as ex:
                 kodi.log(__name__, "ERROR IN BS: %s" % str(ex))
                 pass
         
-        return 0
+        return SubtitleResult.NOT_AVAILABLE
    
     def search_filename(self, filename, languages):
         title, year = kodi.get_clean_movie_title(filename)
@@ -105,7 +106,7 @@ class Adic7edServer:
                 episode = string.lstrip(match.group('episode'), '0')
                 return self.query_tv_show(tvshow, season, episode, languages)
             else:
-                return 0
+                return SubtitleResult.NOT_AVAILABLE
     
     def searchsubtitles(self, item):
         # noinspection PyBroadException
@@ -121,7 +122,7 @@ class Adic7edServer:
                 return self.search_filename(item['filename'], item['3let_language'])
         except:
             kodi.log(__name__, "failed to connect to Addic7ed service for subtitle search", kodi.LOGNOTICE)
-            return -1
+            return SubtitleResult.NOT_AVAILABLE
         
     @staticmethod
     def get_language_info(language):

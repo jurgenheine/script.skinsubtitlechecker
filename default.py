@@ -1,22 +1,15 @@
 # -*- coding: UTF-8 -*-
 
 import sys
-import Queue as queue
-import threading, time, random
-from operator import itemgetter
-from scrapers.open_subtitles import OSDBServer
-from scrapers.addic7ed import Adic7edServer
-from scrapers.podnapisi import PNServer
-from lib import kodi
-from lib.db_utils import DBConnection
-from lib.setting import Setting
-from lib.language import Language
+import kodi
+from subtitleresult import SubtitleResult
 from lib.videogui import VideoGui
-from lib.videoitem import VideoItem
+from lib.subtitlechecker import SubtitleChecker
+from lib.db_utils import DBConnection
 
 #import ptvsd
 #ptvsd.enable_attach(secret='my_secret')
-class SubtitleChecker:
+class Main:
     def __init__(self):
         kodi.log(__name__, "version %s started" % kodi.get_version(), kodi.LOGNOTICE)
         self._init_vars()
@@ -26,221 +19,131 @@ class SubtitleChecker:
         return self
 
     def _init_vars(self):
-        self.settings = Setting()
-        self.language = Language()
         self.gui = VideoGui()
-        self.videoitem = VideoItem()
+        self.subtitlechecker = SubtitleChecker()
         self.stop = False
-        self.db = None
     
     @staticmethod
     def _get_params():
-        kodi.log(__name__, "params: %s" % sys.argv[1])
         param = {}
-        paramstring = sys.argv[1]
-        if len(paramstring) >= 2:
-            params = paramstring
-            cleanedparams = params.replace('?', '')
-            pairsofparams = cleanedparams.split('&')
-            param = {}
-            for i in range(len(pairsofparams)):
-                splitparams = pairsofparams[i].split('=')
-                if (len(splitparams)) == 2:
-                    param[splitparams[0]] = splitparams[1]
-
+        if len(sys.argv) > 1:
+            kodi.log(__name__, "params: %s" % sys.argv[1])
+            paramstring = sys.argv[1]
+            if len(paramstring) >= 2:
+                params = paramstring
+                cleanedparams = params.replace('?', '')
+                pairsofparams = cleanedparams.split('&')
+                param = {}
+                for i in range(len(pairsofparams)):
+                    splitparams = pairsofparams[i].split('=')
+                    if (len(splitparams)) == 2:
+                        param[splitparams[0]] = splitparams[1]
+        
         return param
 
     def _parse_argv(self):
         self.params = self._get_params()
         kodi.log(__name__, "params: %s" % self.params)
-        self.backend = self.params.get('backend', False)
-        self.flush_cache = self.params.get('flushcache', False)
-        self.present_text = self.params.get('availabereturnvalue', '')
-        self.not_present_text = self.params.get('notavailablereturnvalue', '')
-        self.search_text = self.params.get('searchreturnvalue', '')
+        self._set_action_from_params()
+        self.gui.set_gui_params(self.params)
+
+    def _set_action_from_params(self):
+        if len(self.params) == 0:
+            # if no parameters, then asume run from gui
+            self.action = 'runfromgui'
+        else:
+            # if no action parameter, then asume run once
+            self.action = self.params.get('action', 'runonce')
+            if self.params.get('backend', False):
+                # if backend set, then set action to backend
+                self.action = "backend"
 
     def execute(self):
-        # don't run if already in back-end
-        if self.flush_cache:
+        if self.action == 'runfromgui':
+            kodi.log(__name__, 'Running from GUI, no action.')
+        elif self.action == 'flushcache':
             self.execute_flush_cache()
-            
-        elif self.gui.property_videolibrary_empty("skinsubtitlechecker.backend_running"):
-            self.prepare_run()
-            
-            if self.backend:
-                kodi.log(__name__, 'Start running background.', kodi.LOGNOTICE)
-                # run in back-end if parameter was set
-                self.gui.set_videolibrary_property("skinsubtitlechecker.backend_running","true")
-                self.set_subtitle_properties(None)
-                self.run_backend()
-            else:
-                kodi.log(__name__, 'Execute once.')
-                self.videoitem.set_parameter_listitem(self.language.language_iso_639_2)
-                self.check_subtitlte()
-        else:
+        elif self.gui.is_running_backend():
+            # don't run if already in back-end
             kodi.log(__name__, 'Running in background detected, no action.')
+        elif self.action == 'backend':
+            # run in back-end if parameter was set
+            self.run_backend()
+        else:
+            self.run_once()
 
     def execute_flush_cache(self):
         kodi.log(__name__, 'Flush cache.', kodi.LOGNOTICE)
-        self.db = DBConnection()
-        self.db.flush_cache()
+        with DBConnection() as db:
+            db.flush_cache()
     
-    def prepare_run(self):
-        self.db = DBConnection()
-        self.scrapers = []
-        if(bool(self.settings.get_setting("OSenabled"))):
-            self.scrapers.append('opensubtitle')
-        if(bool(self.settings.get_setting("A7enabled"))):
-            self.scrapers.append('addic7ed')
-        if(bool(self.settings.get_setting("PNenabled"))):
-            self.scrapers.append('podnapisi')
-
     def run_backend(self):
-        self.stop = False
+        self.init_run_backend()
         while not self.stop:
-            if self.subtitlecheck_needed():
-                self.check_subtitlte()
+            if self.gui.subtitlecheck_needed():
+                self.check_subtitle()
             else:
                 kodi.sleep(200)
             self.check_stop_backend()
     
-    def subtitlecheck_needed(self):
-        if not self.gui.is_scrolling() and (self.gui.is_movie() or self.gui.is_episode()):
-            return self.videoitem.current_item_changed(self.language.language_iso_639_2)
-        else: 
-            # clear subtitle check if not movie or episode or if scrolling
-            self.set_subtitle_properties(None)
-            return False
+    def init_run_backend(self):
+        kodi.log(__name__, 'Start running background.', kodi.LOGNOTICE)
+        self.gui.set_running_backend()
+        self.gui.set_subtitle_properties(SubtitleResult.HIDE)
+        self.stop = False
+
+    def run_once(self):
+        kodi.log(__name__, 'Execute once.')
+        self.check_subtitle()
 
     def check_stop_backend(self):
         if not self.gui.videolibray_is_visible() or kodi.abort_requested():
             kodi.log(__name__, 'back-end stopped.', kodi.LOGNOTICE)
-            self.gui.clear_videolibrary_property("skinsubtitlechecker.backend_running")
+            self.gui.reset_running_backend()
             self.stop = True
     
-    def check_subtitlte(self):
-        self.set_subtitle_properties(-1)
-        # check cache first
-        kodi.log(__name__, 'start search local cache.')
-        subtitle_present = self.db.get_cached_subtitle(self.videoitem.item)
-        if subtitle_present == -1:
-            # only check if not found in cache, no subtitle is a result
-            result_queue = queue.Queue()
-            thread_count =0 # number of threads started,needed to determine max queue results
-            
-            #start the threads
-            for scraper in self.scrapers:
-                thread = threading.Thread(target=self.check_subtitle_process, args=(scraper, result_queue))
-                thread.daemon=True
-                thread_count+=1
-                thread.start()
-            
-            # wait for the first subtitle found or if all checks are negative
-            for x in range(0, thread_count):
-                current_subtitle_present = result_queue.get()
-                if current_subtitle_present >= 0:
-                    # result returned, set to subtitle present property, ignore error result
-                    subtitle_present =current_subtitle_present
-                
-                # check if subtitle is found
-                if current_subtitle_present == 1:
-                    #subtitle found, other results can be ignored
-                    break
-                
-            # store result to cache
-            if subtitle_present >= 0:
-                kodi.log(__name__, 'cache item')
-                self.db.cache_subtitle(self.videoitem.item, subtitle_present)
-        
-        # set data to gui properties    
-        self.set_subtitle_properties(subtitle_present)
-
-    def check_subtitle_process(self, name, result_queue):
-        if name == 'opensubtitle':
-            with OSDBServer()as osdbserver:
-                kodi.log(__name__, 'start search Opensubtitle.')
-                result_queue.put(osdbserver.searchsubtitles(self.videoitem.item))
-        elif name == 'addic7ed':
-            with Adic7edServer()as adic7edserver:
-                kodi.log(__name__, 'start search Addic7ed.')
-                result_queue.put(adic7edserver.searchsubtitles(self.videoitem.item))
-        elif name == 'podnapisi':
-            with PNServer()as pnserver:
-                kodi.log(__name__, 'start search Podnapisi.')
-                result_queue.put(pnserver.searchsubtitles(self.videoitem.item))
-
-    def set_subtitle_properties(self, subtitle_present):
-        if subtitle_present == -1:
-            self.gui.set_property('skinsubtitlechecker.available', self.search_text)
-        elif subtitle_present == 1:
-            kodi.log(__name__, 'subtitle found.')
-            self.gui.set_property('skinsubtitlechecker.available', self.present_text)
-        elif subtitle_present == 0:
-            kodi.log(__name__, 'no subtitle found')
-            self.gui.set_property('skinsubtitlechecker.available', self.not_present_text)
-        else:
-            kodi.log(__name__, 'no subtitle search for item')
-            self.gui.set_property('skinsubtitlechecker.available', '')
-        self.set_language(subtitle_present)
-
-    def set_language(self, subtitle_present):
-        if(subtitle_present is not None):
-            self.gui.set_property('skinsubtitlechecker.language.full', self.language.language_full)
-            self.gui.set_property('skinsubtitlechecker.language.iso_639_1', self.language.language_iso_639_1)
-            self.gui.set_property('skinsubtitlechecker.language.iso_639_2t', self.language.language_iso_639_2t)
-            self.gui.set_property('skinsubtitlechecker.language.iso_639_2b', self.language.language_iso_639_2b)
-            self.gui.set_property('skinsubtitlechecker.language.iso_639_2_kodi', self.language.language_iso_639_2)
-        else:
-            self.gui.set_property('skinsubtitlechecker.language.full', "")
-            self.gui.set_property('skinsubtitlechecker.language.iso_639_1', "")
-            self.gui.set_property('skinsubtitlechecker.language.iso_639_2t', "")
-            self.gui.set_property('skinsubtitlechecker.language.iso_639_2b', "")
-            self.gui.set_property('skinsubtitlechecker.language.iso_639_2_kodi', "")
+    def check_subtitle(self):
+        # set gui property to searching
+        self.gui.set_subtitle_properties(SubtitleResult.SEARCH)
+        subtitle_present = self.subtitlechecker.check_subtitle(self.gui.get_video_item())
+        # set data to gui properties
+        self.gui.set_subtitle_properties(subtitle_present)
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.backend = None
-        self.params = None
-        
+        self.clean_up_gui(exc_type, exc_value, traceback)        
+        self.clean_up_subtitlechecker(exc_type, exc_value, traceback)
+        # clean variables and delete pointers to variables
+        self.stop = None
+        del self.stop
+        self.params =None
+        del self.params
+    
+    def clean_up_gui(self, exc_type, exc_value, traceback):
         # noinspection PyBroadException
         try:    
-            # call explicit the exit function of the db, it is not used within
-            # with
-            # statement
-            self.db.__exit__(exc_type, exc_value, traceback)
-            self.db = None
-            del self.db
+            # call explicit the exit function of the gui class, it is not used
+            # within with statement
+            self.gui.__exit__(exc_type, exc_value, traceback)
+            self.gui = None
+            del self.gui
         except:
             # database is not yet set
             pass
-        self.settings.__exit__(exc_type, exc_value, traceback)
-        self.language.__exit__(exc_type, exc_value, traceback)
-        self.gui.__exit__(exc_type, exc_value, traceback)
-        self.videoitem.__exit__(exc_type, exc_value, traceback)
 
-        # clean variables
-        self.flush_cache = None
-        self.videoitem = None
-        self.not_present_text = None
-        self.present_text = None
-        self.search_text = None
-        self._stop = None
-        self.settings = None
-        self.language = None
-        self.gui = None
-
-        #delete pointers to variables
-        del self.flush_cache
-        del self.videoitem
-        del self.not_present_text
-        del self.present_text
-        del self.search_text
-        del self._stop
-        del self.settings
-        del self.language
-        del self.gui
+    def clean_up_subtitlechecker(self, exc_type, exc_value, traceback):
+        # noinspection PyBroadException
+        try:    
+            # call explicit the exit function of the videoitem class, it is not
+            # used within with statement
+            self.subtitlechecker.__exit__(exc_type, exc_value, traceback)
+            self.subtitlechecker = None
+            del self.subtitlechecker
+        except:
+            # database is not yet set
+            pass    
 
 if __name__ == "__main__":
-    with SubtitleChecker() as subtitlechecker:
+    with Main() as subtitlechecker:
         subtitlechecker.execute()
 
 kodi.log(__name__, 'script finished.')

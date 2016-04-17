@@ -1,3 +1,9 @@
+v 0.14
+Refactor modules
+Rename scrapers to providers
+add action argument parameter
+move functions and classes to module
+
 v 0.13
 Fix critical error for fresh systems
 
