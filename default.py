@@ -22,27 +22,9 @@ class Main:
         self.gui = VideoGui()
         self.subtitlechecker = SubtitleChecker()
         self.stop = False
-    
-    @staticmethod
-    def _get_params():
-        param = {}
-        if len(sys.argv) > 1:
-            kodi.log(__name__, "params: %s" % sys.argv[1])
-            paramstring = sys.argv[1]
-            if len(paramstring) >= 2:
-                params = paramstring
-                cleanedparams = params.replace('?', '')
-                pairsofparams = cleanedparams.split('&')
-                param = {}
-                for i in range(len(pairsofparams)):
-                    splitparams = pairsofparams[i].split('=')
-                    if (len(splitparams)) == 2:
-                        param[splitparams[0]] = splitparams[1]
-        
-        return param
 
     def _parse_argv(self):
-        self.params = self._get_params()
+        self.params = kodi.get_params(sys.argv,1)
         kodi.log(__name__, "params: %s" % self.params)
         self._set_action_from_params()
         self.gui.set_gui_params(self.params)
