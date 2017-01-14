@@ -45,11 +45,11 @@ msgid "Ondertitel cache"
 msgstr ""
 
 msgctxt "#32010"
-msgid "Ondertitel niet gevonden cache tijd in uren"
+msgid "Ondertitel niet gevonden cache tijd (uren)"
 msgstr ""
 
 msgctxt "#32011"
-msgid "Ondertitel gevonden cache tijd in dagen"
+msgid "Ondertitel gevonden cache tijd (dagen)"
 msgstr ""
 
 msgctxt "#32012"
@@ -60,4 +60,59 @@ msgctxt "#32013"
 msgid "Podnapisi authenticatie [Ongeldige aanmeld gegevens]"
 msgstr ""
 
+msgctxt "#32014"
+msgid "ondertitel beschikbaar"
+msgstr ""
+
+msgctxt "#32015"
+msgid "ondertitel niet gevonden"
+msgstr ""
+
+msgctxt "#32016"
+msgid "Ondertitel zoeken"
+msgstr ""
+
+msgctxt "#32017"
+msgid "Providers"
+msgstr ""
+
+msgctxt "#32018"
+msgid "Zoek naar geinstalleerde providers interval (seconden)"
+msgstr ""
+
+msgctxt "#32019"
+msgid "Verwijder alle providers"
+msgstr ""
+
+msgctxt "#32020"
+msgid "Update providers"
+msgstr ""
+
+msgctxt "#32021"
+msgid "Notificaties"
+msgstr ""
+
+msgctxt "#32022"
+msgid "Methode"
+msgstr ""
+
+msgctxt "#32023"
+msgid "Auto ( via skin als deze dit support, anders pop-up)"
+msgstr ""
+
+msgctxt "#32024"
+msgid "Altijd pop-up notificaties"
+msgstr ""
+
+msgctxt "#32025"
+msgid "Polling tijd voor pop-up notificatie (milliseconde)"
+msgstr ""
+
+msgctxt "#32026"
+msgid "Pop-up tijd (seconden)"
+msgstr ""
+
+msgctxt "#32027"
+msgid "Polling tijd voor skin (milliseconde)"
+msgstr ""
 

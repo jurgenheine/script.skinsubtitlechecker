@@ -1,7 +1,7 @@
 import os
 import time
-import kodi
-from setting import Setting
+import skinsubtitlekodi as kodi
+from skinsubtitlesetting import Setting
 from sqlite3 import dbapi2
 from sqlite3 import OperationalError as OperationalError
 from sqlite3 import DatabaseError as DatabaseError
@@ -24,16 +24,18 @@ class DBConnection():
                 self.create_db()
         else:
             self.__connect_to_db()
+            self.update_database()
+            
 
     def __enter__(self):
         return self
 
-    def flush_cache(self):
+    def flush_subtitle_cache(self):
         sql = 'DELETE FROM subtitle_cache'
         self.__execute(sql)
         self.__execute('VACUUM')
 
-    def cleanup_cache(self):
+    def cleanup_subtitle_cache(self):
         now = time.time()
         minimal_timestamp_found_value = now - self.settings.get_cache_found_timeout()
         minimal_timestamp_not_found_value = now - self.settings.get_cache_not_found_timeout()
@@ -46,7 +48,7 @@ class DBConnection():
         sql = 'REPLACE INTO subtitle_cache (year, season, episode, tvshow, title, filename, subtitle, timestamp) VALUES(?, ?, ?, ?, ?, ?, ?, ?)'
         self.__execute(sql, (item['year'], item['season'], item['episode'], item['tvshow'], item['title'], item['filename'],int(subtitle_present), now))
 
-    def delete_cached_url(self, item):
+    def delete_cached_subtitle(self, item):
         sql = 'DELETE FROM subtitle_cache WHERE year = ? AND season = ? AND episode = ? AND tvshow = ? AND title = ? AND filename = ?'
         self.__execute(sql, (item['year'], item['season'], item['episode'], item['tvshow'], item['title'], item['filename']))
         
@@ -71,21 +73,55 @@ class DBConnection():
                 return subtitle_present
             elif age >= limit_found and subtitle_present == 1:
                 kodi.log(__name__, 'DB Cache: Item: %s, Cache Hit: True, created: %s, age: %s days, limit: True' % (item, createddate, (now - created)/ 3600/ 24), kodi.LOGDEBUG)
-                self.delete_cached_url(item)
+                self.delete_cached_subtitle(item)
             else:
                 kodi.log(__name__, 'DB Cache: Item: %s, Cache Hit: True, created: %s, age: %s, limit: True' % (item, createddate, (now - created)/ 3600), kodi.LOGDEBUG)
-                self.delete_cached_url(item)
+                self.delete_cached_subtitle(item)
         else:
             kodi.log(__name__, 'DB Cache: Item: %s, Cache Hit: False' % (item), kodi.LOGDEBUG)
         return -1
    
-    # intended to be a common method for creating a db from scratch
+    def flush_provider_cache(self):
+        sql = 'DELETE FROM provider_cache'
+        self.__execute(sql)
+        self.__execute('VACUUM')
+
+    def cache_provider(self, addonid):
+        sql = 'REPLACE INTO provider_cache (addonid) VALUES(?)'
+        self.__execute(sql, (addonid))
+
+    def delete_cached_provider(self, addonid):
+        sql = 'DELETE FROM provider_cache WHERE addonid = ?'
+        self.__execute(sql, (addonid))
+
+    def get_cached_providers(self):
+        sql = 'SELECT addonid FROM provider_cache'
+        rows = self.__execute(sql, (addonid))
+        return rows
+
+    def update_cached_providers(self, newaddonids):
+        # first get current providers from cache
+        currentaddonids= self.get_cached_providers()
+        # add providers not in cache
+        for addonid in newaddonids:
+            if addonid not in currentaddonids:
+                self.cache_provider(addonid)
+        # remove providers from cache who are not installed anymore
+        for addonid in currentaddonids:
+            if addonid not in newaddonids:
+                self.delete_cached_provider(addonid)
+    
     def init_database(self):
+        # intended to be a common method for creating a db from scratch
         kodi.log(__name__, 'Building Subtitle checker Database', kodi.LOGDEBUG)
             
         self.__execute('PRAGMA journal_mode=WAL')
-        self.__execute('CREATE TABLE IF NOT EXISTS subtitle_cache (year TEXT, season TEXT, episode TEXT, tvshow TEXT, title TEXT, filename TEXT, subtitle INTEGER, timestamp, PRIMARY KEY(year, season, episode, tvshow, title, filename))')
+        self.update_database()
  
+    def update_database(self):
+        self.__execute('CREATE TABLE IF NOT EXISTS subtitle_cache (year TEXT, season TEXT, episode TEXT, tvshow TEXT, title TEXT, filename TEXT, subtitle INTEGER, timestamp, PRIMARY KEY(year, season, episode, tvshow, title, filename))')
+        self.__execute('CREATE TABLE IF NOT EXISTS provider_cache (addonid TEXT , PRIMARY KEY(addonid))')
+
     def close_db(self):
         try: self.db.close()
         except: pass

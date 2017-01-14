@@ -2,9 +2,9 @@
 # Based on contents from https://github.com/amet/service.subtitles.opensubtitles
 
 import xmlrpclib
-import kodi
-from setting import Setting
-from subtitleresult import SubtitleResult
+import skinsubtitlekodi as kodi
+from skinsubtitlesetting import Setting
+from skinsubtitleresult import SubtitleResult
 
 __scriptname__ = "XBMC Subtitles"
 

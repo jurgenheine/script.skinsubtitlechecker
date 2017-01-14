@@ -1,5 +1,5 @@
-import kodi
-from setting import Setting
+import skinsubtitlekodi as kodi
+from skinsubtitlesetting import Setting
  
 class Language:
     def __init__(self):

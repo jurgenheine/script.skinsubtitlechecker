@@ -45,11 +45,11 @@ msgid "Subtitle cache"
 msgstr ""
 
 msgctxt "#32010"
-msgid "Subtitle not found cache time in hours"
+msgid "Subtitle not found cache time (hours)"
 msgstr ""
 
 msgctxt "#32011"
-msgid "Subtitle found cache time in days"
+msgid "Subtitle found cache time (days)"
 msgstr ""
 
 msgctxt "#32012"
@@ -58,4 +58,60 @@ msgstr ""
  
 msgctxt "#32013"
 msgid "Podnapisi authenticate [InvalidCredentials]"
+msgstr ""
+
+msgctxt "#32014"
+msgid "subtilte available"
+msgstr ""
+
+msgctxt "#32015"
+msgid "subtilte not found"
+msgstr ""
+
+msgctxt "#32016"
+msgid "Search subtitle"
+msgstr ""
+
+msgctxt "#32017"
+msgid "Providers"
+msgstr ""
+
+msgctxt "#32018"
+msgid "Search installed providers interval (seconds)"
+msgstr ""
+
+msgctxt "#32019"
+msgid "Delete all providers"
+msgstr ""
+
+msgctxt "#32020"
+msgid "Update providers"
+msgstr ""
+
+msgctxt "#32021"
+msgid "Notifications"
+msgstr ""
+
+msgctxt "#32022"
+msgid "Method"
+msgstr ""
+
+msgctxt "#32023"
+msgid "Auto ( skin if supported, otherwise pop-up)"
+msgstr ""
+
+msgctxt "#32024"
+msgid "Always pop-up notifications"
+msgstr ""
+
+msgctxt "#32025"
+msgid "Polling time for pop-up notificatie (milliseconds)"
+msgstr ""
+
+msgctxt "#32026"
+msgid "Pop-up duration (seconds)"
+msgstr ""
+
+msgctxt "#32027"
+msgid "Polling time for skin support (milliseconds)"
 msgstr ""

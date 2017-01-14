@@ -3,8 +3,8 @@
 
 from xml.dom import minidom
 import urllib
-import kodi
-from subtitleresult import SubtitleResult
+import skinsubtitlekodi as kodi
+from skinsubtitleresult import SubtitleResult
 
 class PNServer:
     

@@ -20,4 +20,16 @@
       <setting label="32011" type="number" id="CacheTimeFound" default="30"/>
       <setting label="32012" type="action" action="RunScript(script.skinsubtitlechecker, action=flushcache)"/>
     </category>
+    <!--TODO: Enable when external providers are implemented-->
+    <!--<category label="32017">
+      <setting label="32018" type="number" id="ProviderSearchInterval" default="1800"/>
+      <setting label="32019" type="action" action="RunScript(script.skinsubtitlechecker, action=flushproviders)"/>
+      <setting label="32020" type="action" action="RunScript(script.skinsubtitlechecker, action=updateproviders)"/>
+    </category>-->
+    <category label="32021">
+      <setting label="32022" type="enum" id="NotificationMethod" lvalues="32023|32024"/>
+      <setting label="32027" type="number" id="SkinPollingInterval" default="200"/>
+      <setting label="32025" type="number" id="NotificationPollingInterval" default="2000"/>
+      <setting label="32026" type="number" id="NotificationDuration" default="2"/>
+    </category>
 </settings>

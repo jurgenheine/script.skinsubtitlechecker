@@ -7,8 +7,8 @@ import re
 import socket
 import string
 from BeautifulSoup import BeautifulSoup
-from subtitleresult import SubtitleResult
-import kodi
+from skinsubtitleresult import SubtitleResult
+import skinsubtitlekodi as kodi
 
 class Adic7edServer:
     def __init__(self, *args, **kwargs):
@@ -58,7 +58,7 @@ class Adic7edServer:
 
     def query(self, searchurl, langs):
         
-        kodi.log(__name__, "Search URL - %s" % searchurl)
+        kodi.log(__name__, "Search URL - %s" % searchurl,kodi.LOGINFO)
         socket.setdefaulttimeout(10)
         request = urllib2.Request(searchurl, headers=self.req_headers)
         request.add_header('Pragma', 'no-cache')

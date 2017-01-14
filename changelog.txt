@@ -1,3 +1,7 @@
+v 0.15
+Added notification method
+Add basic functions to make external providers in future possible
+
 v 0.14
 Refactor modules
 Rename scrapers to providers

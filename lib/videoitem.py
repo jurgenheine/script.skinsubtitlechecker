@@ -1,5 +1,5 @@
-import kodi
-from basevideoitem import BaseVideoItem
+import skinsubtitlekodi as kodi
+from skinsubtitlebasevideoitem import BaseVideoItem
 
 class VideoItem(BaseVideoItem):
 

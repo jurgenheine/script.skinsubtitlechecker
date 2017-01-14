@@ -1,7 +1,9 @@
-import kodi
+import skinsubtitlekodi as kodi
 from lib.language import Language
 from lib.videoitem import VideoItem
-from subtitleresult import SubtitleResult
+from skinsubtitleresult import SubtitleResult
+from skinsubtitlesetting import Setting
+from skinsubtitlenotificationmethod import NotificationMethod
 
 class VideoGui:
     def __init__(self):
@@ -15,25 +17,63 @@ class VideoGui:
         self.dialogwindow = kodi.get_window(12003)  # DialogVideoInfo.xml (movieinformation)
         self.language = Language()
         self.videoitem = VideoItem()
-        self.present_text=""
-        self.not_present_text =""
-        self.search_text =""
+        with Setting() as settings:
+            self.notification_method = settings.get_notification_method()
+            self.notification_duration = settings.get_notification_duration()
+        if (self.notification_method == NotificationMethod.AUTO):
+            self.set_property('skinsubtitlechecker.skinsupport', str(False))
+            kodi.log(__name__, 'Skin support set to Auto')
+        elif(NotificationMethod.POPUP):
+            self.set_property('skinsubtitlechecker.skinsupport', str(False))
+            kodi.log(__name__, 'Skin support set to Pop-up')
+        else:  
+            self.set_property('skinsubtitlechecker.skinsupport', str(True))
+            kodi.log(__name__, 'notification set to skin support')
 
-    def set_gui_params(self, params):
-        self.present_text = params.get('availabereturnvalue', '')
-        self.not_present_text = params.get('notavailablereturnvalue', '')
-        self.search_text = params.get('searchreturnvalue', '')
+    def set_gui_params(self, params,skinsupport):
+        if(self.notification_method == NotificationMethod.AUTO):
+            self.set_property('skinsubtitlechecker.skinsupport', str(skinsupport))
+            if (skinsupport == True):
+                kodi.log(__name__, 'notification set by skin to skin support')    
+            else:  
+                kodi.log(__name__, 'notification set by skin to Pop-up ') 
+
+        self.set_property('skinsubtitlechecker.search_text', params.get('searchreturnvalue', ''))
+        self.set_property('skinsubtitlechecker.present_text', params.get('availabereturnvalue', ''))
+        self.set_property('skinsubtitlechecker.not_present_text', params.get('notavailablereturnvalue', ''))
         self.videoitem.set_parameter_listitem(params,self.language.language_iso_639_2)
     
+    def show_subtitle(self, subtitle_present):
+        if(self.get_skin_support() == True):
+            self.set_subtitle_properties(subtitle_present)
+        else:
+            self.send_subtitle_notification(subtitle_present)
+
+    def send_subtitle_notification(self, subtitle_present):
+        if subtitle_present == SubtitleResult.SEARCH:
+            header = kodi.get_localized_string(32016)
+        elif subtitle_present == SubtitleResult.AVAILABLE:
+            header = kodi.get_localized_string(32014)
+        elif subtitle_present == SubtitleResult.NOT_AVAILABLE:
+            header = kodi.get_localized_string(32015)
+        else: 
+            return
+        caption = self.language.language_iso_639_2t + " " + header
+        message = self.videoitem.item['title']
+        if self.is_episode():
+            message = self.videoitem.item['tvshow'] + ", " + message + " S" + self.videoitem.item['season'] + "E" + self.videoitem.item['episode']
+
+        kodi.send_notification(caption, message, self.notification_duration)
+
     def set_subtitle_properties(self, subtitle_present):
         if subtitle_present == SubtitleResult.SEARCH:
-            self.set_property('skinsubtitlechecker.available', self.search_text)
+            self.set_property('skinsubtitlechecker.available', self.get_search_text())
         elif subtitle_present == SubtitleResult.AVAILABLE:
             kodi.log(__name__, 'subtitle found.')
-            self.set_property('skinsubtitlechecker.available', self.present_text)
+            self.set_property('skinsubtitlechecker.available', self.get_present_text())
         elif subtitle_present == SubtitleResult.NOT_AVAILABLE:
             kodi.log(__name__, 'no subtitle found')
-            self.set_property('skinsubtitlechecker.available', self.not_present_text)
+            self.set_property('skinsubtitlechecker.available', self.get_not_present_text())
         else:
             kodi.log(__name__, 'no subtitle search for item')
             self.reset_property('skinsubtitlechecker.available')
@@ -60,11 +100,11 @@ class VideoGui:
         return self.videoitem.item
 
     def subtitlecheck_needed(self):
-        if not self.is_scrolling() and (self.is_movie() or self.is_episode()):
+        if (not self.is_scrolling() and (self.movieinformation_is_visible() or self.videolibray_is_visible()) and (self.is_movie() or self.is_episode())):
             return self.videoitem.current_item_changed(self.language.language_iso_639_2)
         else: 
             # clear subtitle check if not movie or episode or if scrolling
-            self.set_subtitle_properties(SubtitleResult.HIDE)
+            self.show_subtitle(SubtitleResult.HIDE)
             return False
 
     def is_running_backend(self):
@@ -85,11 +125,11 @@ class VideoGui:
         self.set_dialogvideoinfo_property(name, value)
 
     def set_videolibrary_property(self, name, value):
-        kodi.log(__name__,'set videolibray property %s with %s' %(name, value))
+        kodi.log(__name__,'set videolibray property %s with %s' % (name, value))
         self.window.setProperty(name, value)
 
     def set_dialogvideoinfo_property(self, name, value):
-        kodi.log(__name__,'set video dialog property %s with %s' %(name, value))
+        kodi.log(__name__,'set video dialog property %s with %s' % (name, value))
         self.dialogwindow.setProperty(name, value)
     
     def clear_property(self, name):
@@ -101,6 +141,31 @@ class VideoGui:
 
     def clear_dialogvideoinfo_property(self, name):
         self.dialogwindow.clearProperty(name)
+
+    def get_search_text(self):
+        return self.get_property('skinsubtitlechecker.search_text')
+
+    def get_present_text(self):
+            return self.get_property('skinsubtitlechecker.present_text')
+
+    def get_not_present_text(self):
+            return self.get_property('skinsubtitlechecker.not_present_text')
+
+    def get_skin_support(self):
+            return self.get_property('skinsubtitlechecker.skinsupport')=='True'
+
+    def get_property(self,name):
+        if(self.videolibray_is_visible()):
+            return self.get_videolibrary_property(name)
+        return self.get_dialogvideoinfo_property(name)
+    
+    def get_videolibrary_property(self, name):
+        kodi.log(__name__,'get videolibray property %s' % (name))
+        return self.window.getProperty(name)
+
+    def get_dialogvideoinfo_property(self, name):
+        kodi.log(__name__,'get videolibray property %s' % (name))
+        return self.dialogwindow.getProperty(name)
 
     def is_property_videolibrary_empty(self, value):
         return kodi.get_condition_visibility('IsEmpty(Window(videolibrary).Property(%s))' % (value))
@@ -120,19 +185,16 @@ class VideoGui:
     def videolibray_is_visible(self):
         return kodi.get_condition_visibility("Window.IsVisible(videolibrary)")
 
+    def movieinformation_is_visible(self):
+        return kodi.get_condition_visibility("Window.IsVisible(movieinformation)")
+
     def __exit__(self, exc_type, exc_value, traceback):
         self.clean_up_language(exc_type, exc_value, traceback)
         self.clean_up_videoitem(exc_type, exc_value, traceback)
         self.window = None
         self.dialogwindow = None
-        self.not_present_text = None
-        self.present_text = None
-        self.search_text = None
         del self.window
         del self.dialogwindow
-        del self.not_present_text
-        del self.present_text
-        del self.search_text
 
     def clean_up_language(self, exc_type, exc_value, traceback):
         # noinspection PyBroadException

@@ -5,10 +5,10 @@ import threading
 from providers.open_subtitles import OSDBServer
 from providers.addic7ed import Adic7edServer
 from providers.podnapisi import PNServer
-import kodi
-from subtitleresult import SubtitleResult
+import skinsubtitlekodi as kodi
+from skinsubtitleresult import SubtitleResult
 from lib.db_utils import DBConnection
-from setting import Setting
+from skinsubtitlesetting import Setting
 
 class SubtitleChecker:
     def __init__(self):

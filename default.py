@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 
 import sys
-import kodi
-from subtitleresult import SubtitleResult
+import skinsubtitlekodi as kodi
+from skinsubtitleresult import SubtitleResult
 from lib.videogui import VideoGui
 from lib.subtitlechecker import SubtitleChecker
 from lib.db_utils import DBConnection
@@ -27,7 +27,8 @@ class Main:
         self.params = kodi.get_params(sys.argv,1)
         kodi.log(__name__, "params: %s" % self.params)
         self._set_action_from_params()
-        self.gui.set_gui_params(self.params)
+        skinsupport = self.action=='backend' or self.action=='runonce'
+        self.gui.set_gui_params(self.params,skinsupport)
 
     def _set_action_from_params(self):
         if len(self.params) == 0:
@@ -44,7 +45,11 @@ class Main:
         if self.action == 'runfromgui':
             kodi.log(__name__, 'Running from GUI, no action.')
         elif self.action == 'flushcache':
-            self.execute_flush_cache()
+            self.execute_flush_subtitle_cache()
+        elif self.action == 'flushproviders':
+            self.execute_flush_provider_cache()
+        elif self.action == 'updateproviders':
+            self.update_providers()
         elif self.gui.is_running_backend():
             # don't run if already in back-end
             kodi.log(__name__, 'Running in background detected, no action.')
@@ -54,42 +59,30 @@ class Main:
         else:
             self.run_once()
 
-    def execute_flush_cache(self):
-        kodi.log(__name__, 'Flush cache.', kodi.LOGNOTICE)
+    def execute_flush_subtitle_cache(self):
+        kodi.log(__name__, 'Flush subtitle cache.', kodi.LOGNOTICE)
         with DBConnection() as db:
-            db.flush_cache()
+            db.flush_subtitle_cache()
     
-    def run_backend(self):
-        self.init_run_backend()
-        while not self.stop:
-            if self.gui.subtitlecheck_needed():
-                self.check_subtitle()
-            else:
-                kodi.sleep(200)
-            self.check_stop_backend()
-    
-    def init_run_backend(self):
-        kodi.log(__name__, 'Start running background.', kodi.LOGNOTICE)
-        self.gui.set_running_backend()
-        self.gui.set_subtitle_properties(SubtitleResult.HIDE)
-        self.stop = False
+    def execute_flush_provider_cache(self):
+        kodi.log(__name__, 'Flush provider cache.', kodi.LOGNOTICE)
+        with DBConnection() as db:
+            db.flush_provider_cache()
+
+    def update_providers(self):
+        kodi.log(__name__, 'Update providers.', kodi.LOGNOTICE)
+        #TODO: update providers
 
     def run_once(self):
         kodi.log(__name__, 'Execute once.')
         self.check_subtitle()
-
-    def check_stop_backend(self):
-        if not self.gui.videolibray_is_visible() or kodi.abort_requested():
-            kodi.log(__name__, 'back-end stopped.', kodi.LOGNOTICE)
-            self.gui.reset_running_backend()
-            self.stop = True
-    
+  
     def check_subtitle(self):
         # set gui property to searching
-        self.gui.set_subtitle_properties(SubtitleResult.SEARCH)
+        self.gui.show_subtitle(SubtitleResult.SEARCH)
         subtitle_present = self.subtitlechecker.check_subtitle(self.gui.get_video_item())
         # set data to gui properties
-        self.gui.set_subtitle_properties(subtitle_present)
+        self.gui.show_subtitle(subtitle_present)
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.clean_up_gui(exc_type, exc_value, traceback)        
