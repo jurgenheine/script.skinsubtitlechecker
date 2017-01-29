@@ -6,7 +6,10 @@ class Language:
         self.init_languages()
         self.set_searchlanguages()
         if(self.searchlanguages.count>0):
-            self.set_subtitlelanguages(self.searchlanguages[0])
+            for lang in self.searchlanguages:
+                if lang != "" :
+                    self.set_subtitlelanguages(lang)
+                    break
         else:
             self.set_subtitlelanguages("")
                     
@@ -26,6 +29,9 @@ class Language:
             if( lang !="" and lang not in self.searchlanguages):
                 #add language if not empty and not already exist
                 self.searchlanguages.append(self.get_ISO_639_2(lang))
+        intlan = kodi.get_interface_language()
+        if(intlan !="" and intlan not in self.searchlanguages):
+            self.searchlanguages.append(self.get_ISO_639_2(intlan))
 
     def set_subtitlelanguages(self, lan):
         if lan == "":

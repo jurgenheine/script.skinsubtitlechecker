@@ -13,7 +13,7 @@ class VideoGui:
         return self
 
     def _init_vars(self):
-        self.window = kodi.get_window(10025)  # MyVideoNav.xml (videolibrary)
+        self.window = kodi.get_window(10025)  # MyVideoNav.xml (videos)
         self.dialogwindow = kodi.get_window(12003)  # DialogVideoInfo.xml (movieinformation)
         self.language = Language()
         self.videoitem = VideoItem()
@@ -152,7 +152,10 @@ class VideoGui:
             return self.get_property('skinsubtitlechecker.not_present_text')
 
     def get_skin_support(self):
-            return self.get_property('skinsubtitlechecker.skinsupport')=='True'
+            skinsupport = self.get_property('skinsubtitlechecker.skinsupport')
+            if skinsupport == "":
+                return False
+            return skinsupport.lower() =='true'
 
     def get_property(self,name):
         if(self.videolibray_is_visible()):
@@ -160,18 +163,22 @@ class VideoGui:
         return self.get_dialogvideoinfo_property(name)
     
     def get_videolibrary_property(self, name):
-        kodi.log(__name__,'get videolibray property %s' % (name))
-        return self.window.getProperty(name)
+        propvalue = self.window.getProperty(name)
+        kodi.log(__name__,'videolibray property %s = %s' % (name, propvalue))
+        return propvalue
 
     def get_dialogvideoinfo_property(self, name):
-        kodi.log(__name__,'get videolibray property %s' % (name))
-        return self.dialogwindow.getProperty(name)
+        propvalue = self.dialogwindow.getProperty(name)
+        kodi.log(__name__,'get videolibray property %s = %s' % (name, propvalue))
+        return propvalue
 
     def is_property_videolibrary_empty(self, value):
-        return kodi.get_condition_visibility('IsEmpty(Window(videolibrary).Property(%s))' % (value))
+        return self.window.getProperty(value) == "";
+        #return kodi.get_condition_visibility('IsEmpty(Window(10025).Property(%s))' % (value))
 
     def is_property_dialogvideoinfo_empty(self, value):
-        return kodi.get_condition_visibility('IsEmpty(Window(movieinformation).Property(%s))' % (value))
+        return self.window.getProperty(value) == "";
+        #return kodi.get_condition_visibility('IsEmpty(Window(12003).Property(%s))' % (value))
 
     def is_scrolling(self):
         return kodi.get_condition_visibility("Container.Scrolling")
@@ -183,7 +190,10 @@ class VideoGui:
         return kodi.get_condition_visibility("Container.Content(episodes)")
 
     def videolibray_is_visible(self):
-        return kodi.get_condition_visibility("Window.IsVisible(videolibrary)")
+        if kodi.get_kodi_version() < 17:
+            return kodi.get_condition_visibility("Window.IsVisible(videolibrary)")
+        else:
+            return kodi.get_condition_visibility("Window.IsVisible(videos)")
 
     def movieinformation_is_visible(self):
         return kodi.get_condition_visibility("Window.IsVisible(movieinformation)")

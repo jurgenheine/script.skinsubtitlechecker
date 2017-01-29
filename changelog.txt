@@ -1,3 +1,6 @@
+v 0.16
+Add kodi version check. needed for named windows. Name videolibrary is changed to videos and did not work in Krypton
+
 v 0.15
 Added notification method
 Add basic functions to make external providers in future possible
