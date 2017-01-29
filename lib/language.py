@@ -5,10 +5,10 @@ class Language:
     def __init__(self):
         self.init_languages()
         self.set_searchlanguages()
-        if(self.searchlanguages.count>0):
-            for lang in self.searchlanguages:
-                if lang != "" :
-                    self.set_subtitlelanguages(lang)
+        if(self.searchlanguages.count > 0):
+            for slang in self.searchlanguages:
+                if slang != "" and slang != None:
+                    self.set_subtitlelanguages(slang)
                     break
         else:
             self.set_subtitlelanguages("")
@@ -20,17 +20,18 @@ class Language:
         with Setting() as settings:
             lan = settings.get_kodi_setting('locale.subtitlelanguage')
             langs= settings.get_kodi_setting('subtitles.languages')
-        
-        self.searchlanguages = []
-        if(lan != ""):
-            self.searchlanguages.append(self.get_ISO_639_2(lan))
-
-        for lang in langs:
-            if( lang !="" and lang not in self.searchlanguages):
-                #add language if not empty and not already exist
-                self.searchlanguages.append(self.get_ISO_639_2(lang))
         intlan = kodi.get_interface_language()
-        if(intlan !="" and intlan not in self.searchlanguages):
+        self.searchlanguages = []
+        if(lan != "" and lan != None):
+            self.searchlanguages.append(self.get_ISO_639_2(lan))
+        
+        if langs != None:
+            for lang in langs:
+                if( lang !="" and lang != None and lang not in self.searchlanguages):
+                    #add language if not empty and not already exist
+                    self.searchlanguages.append(self.get_ISO_639_2(lang))
+        
+        if(intlan != "" and intlan != None and intlan not in self.searchlanguages):
             self.searchlanguages.append(self.get_ISO_639_2(intlan))
 
     def set_subtitlelanguages(self, lan):
