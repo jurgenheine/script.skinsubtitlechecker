@@ -1,3 +1,6 @@
+v 0.17
+Add new Addic7ed scraper version for tv-shows only
+
 v 0.16
 Add kodi version check. needed for named windows. Name videolibrary is changed to videos and did not work in Krypton
 

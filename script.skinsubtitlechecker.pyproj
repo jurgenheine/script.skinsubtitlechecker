@@ -51,6 +51,9 @@
     </Compile>
     <Compile Include="lib\__init__.py" />
     <Compile Include="providers\addic7ed.py" />
+    <Compile Include="providers\addic7ed_tvshows.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="providers\open_subtitles.py" />
     <Compile Include="providers\podnapisi.py" />
     <Compile Include="providers\__init__.py" />

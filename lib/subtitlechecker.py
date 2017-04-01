@@ -5,6 +5,7 @@ import threading
 from providers.open_subtitles import OSDBServer
 from providers.addic7ed import Adic7edServer
 from providers.podnapisi import PNServer
+from providers.addic7ed_tvshows import Adic7edServer_TVShows
 import skinsubtitlekodi as kodi
 from skinsubtitleresult import SubtitleResult
 from lib.db_utils import DBConnection
@@ -28,6 +29,7 @@ class SubtitleChecker:
                 providers.append('opensubtitle')
             if(bool(settings.get_setting("A7enabled"))):
                 providers.append('addic7ed')
+                providers.append('addic7ed_tvshows')
             if(bool(settings.get_setting("PNenabled"))):
                 providers.append('podnapisi')
         self.providers = providers
@@ -54,7 +56,7 @@ class SubtitleChecker:
 
     def search_providers(self, item):
         result_queue = queue.Queue()
-        thread_count = self.start_subtitle_providers(item,result_queue)
+        thread_count = self.start_subtitle_providers(item, result_queue)
             
         return self.get_subtitle_result(thread_count, result_queue)
 
@@ -91,6 +93,13 @@ class SubtitleChecker:
             with Adic7edServer()as adic7edserver:
                 kodi.log(__name__, 'start search Addic7ed.')
                 result_queue.put(adic7edserver.searchsubtitles(item))
+        elif name == 'addic7ed_tvshows':
+            if item['tvshow']:
+                with Adic7edServer_TVShows()as adic7edserver_tvshows:
+                    kodi.log(__name__, 'start search Addic7ed TV shows.')
+                    result_queue.put(adic7edserver_tvshows.searchsubtitles(item))
+            else:
+                result_queue.put(SubtitleResult.NOT_AVAILABLE)
         elif name == 'podnapisi':
             with PNServer()as pnserver:
                 kodi.log(__name__, 'start search Podnapisi.')
