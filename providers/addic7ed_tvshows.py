@@ -1,137 +1,137 @@
-# -*- coding: utf-8 -*-
-# Based on contents from https://github.com/cflannagan/service.subtitles.addic7ed
-
-import urllib
+import os
+import time
 import urllib2
 import re
-import socket
-import string
-from BeautifulSoup import BeautifulSoup
+import xbmcvfs
 from skinsubtitleresult import SubtitleResult
 import skinsubtitlekodi as kodi
 
-class Adic7edServer:
-    def __init__(self, *args, **kwargs):
-        self.host = "http://www.addic7ed.com"
-        self.release_pattern = re.compile("Version (.+), ([0-9]+).([0-9])+ MBs")
+BASE_URL = 'http://www.addic7ed.com'
 
-        self.req_headers = {'User-Agent':
-                            'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.A.B.C Safari/525.13',
-                            'Referer':
-                            'http://www.addic7ed.com'}
-    
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.host = None
-        self.release_pattern = None
-        self.req_headers = None
-        del self.host
-        del self.release_pattern
-        del self.req_headers
-    
-    def get_url(self, url):
-        request = urllib2.Request(url, headers=self.req_headers)
-        opener = urllib2.build_opener()
-        response = opener.open(request)
+class Adic7edServer_TVShows():
+    def get_tvshow_id(self, title, year=None):
+        match_title = title.lower()
         
-        contents = response.read()
-        return contents
+        html = self.__get_cached_url(BASE_URL, 24)
+        regex = re.compile('option\s+value="(\d+)"\s*>(.*?)</option')
+        site_matches = []
+        for item in regex.finditer(html):
+            tvshow_id, site_title = item.groups()
 
-    # Sometimes search fail because Addic7ed uses URLs that does not match the TheTVDB format.
-    # This will probably grow to be a hardcoded colleciton over time. 
-    @staticmethod
-    def addic7ize(title):
-        addic7ize_dict = eval(open(kodi.get_script_path()+ '/resources' + '/addic7ed_dict.txt').read())
-        return addic7ize_dict.get(title, title)
-    
-    def query_tv_show(self, name, season, episode, langs):
-        name = self.addic7ize(name).lower().replace(" ", "_")
-        searchurl = "%s/serie/%s/%s/%s/addic7ed" % (self.host, name, season, episode)
-        return self.query(searchurl, langs)
+            # strip year off title and assign it to year if it exists
+            r = re.search('(\s*\((\d{4})\))$', site_title)
+            if r:
+                site_title = site_title.replace(r.group(1), '')
+                site_year = r.group(2)
+            else:
+                site_year = None
 
-    def query_film(self, name, year, langs):
-        name = urllib.quote(name.replace(" ", "_"))
-        searchurl = "%s/film/%s_(%s)-Download" % (self.host, name, str(year))
-        return self.query(searchurl, langs)
+            # print 'show: |%s|%s|%s|' % (tvshow_id, site_title, site_year)
+            if match_title == site_title.lower():
+                if year is None or year == site_year:
+                    return tvshow_id
 
-    def query(self, searchurl, langs):
-        
-        kodi.log(__name__, "Search URL - %s" % searchurl,kodi.LOGINFO)
-        socket.setdefaulttimeout(10)
-        request = urllib2.Request(searchurl, headers=self.req_headers)
-        request.add_header('Pragma', 'no-cache')
-        page = urllib2.build_opener().open(request)
-        content = page.read()
-        content = content.replace("The safer, easier way", "The safer, easier way \" />")
-        soup = BeautifulSoup(content)
-        
-        for langs_html in soup("td", {"class": "language"}):
-        
-            try:
-                fulllanguage = str(langs_html).split('class="language">')[1].split('<a')[0].replace("\n", "")
+                site_matches.append((tvshow_id, site_title, site_year))
 
-                # noinspection PyBroadException
-                try:
-                    lang = self.get_language_info(fulllanguage)
-                except:
-                    lang = {'name': '', '2let': '', '3let': ''}
-                
-                statustd = langs_html.findNext("td")
-                status = statustd.find("b").string.strip()
-                
-                if status == "Completed" and lang['3let'] != '' and (lang['3let'] in langs):
-                    return SubtitleResult.AVAILABLE
-            except Exception as ex:
-                kodi.log(__name__, "ERROR IN BS: %s" % str(ex))
-                pass
-        
-        return SubtitleResult.NOT_AVAILABLE
-   
-    def search_filename(self, filename, languages):
-        title, year = kodi.get_clean_movie_title(filename)
-        kodi.log(__name__, "clean title: \"%s\" (%s)" % (title, year))
-        try:
-            yearval = int(year)
-        except ValueError:
-            yearval = 0
-        if title and yearval > 1900:
-            return self.query_film(title, year, languages)
+        if not site_matches:
+            return None
+        elif len(site_matches) == 1:
+            return site_matches[0][0]
         else:
-            match = re.search(r'\WS(?P<season>\d\d)E(?P<episode>\d\d)', title, flags=re.IGNORECASE)
-            if match is not None:
-                tvshow = string.strip(title[:match.start('season')-1])
-                season = string.lstrip(match.group('season'), '0')
-                episode = string.lstrip(match.group('episode'), '0')
-                return self.query_tv_show(tvshow, season, episode, languages)
-            else:
-                return SubtitleResult.NOT_AVAILABLE
-    
-    def searchsubtitles(self, item):
-        # noinspection PyBroadException
+            # there were multiple title matches and year was passed but no
+            # exact year matches found
+            for match in site_matches:
+                # return the match that has no year specified
+                if match[2] is None:
+                    return match[0]
+
+    def get_subtitles(self, tvshow_id, searchseason, searchepisode, langs):
+        url = BASE_URL + '/ajax_loadShow.php?show=%s&season=%s&langs=&hd=%s&hi=%s' % (tvshow_id, searchseason, 0, 0)
+        html = self.__get_cached_url(url)
+ 
+        regex = re.compile('<td>(\d+)</td><td>(\d+)</td><td>.*?</td><td>(.*?)</td><td.*?>(.*?)</td>.*?<td.*?>(.+?)</td><td.*?>(.*?)</td><td.*?>(.*?)</td><td.*?>(.*?)</td><td.*?><a\s+href="(.*?)">.+?</td>',
+                           re.DOTALL)
+        for match in regex.finditer(html):
+            season, episode, srt_lang, version, completed, hi, corrected, hd, srt_url = match.groups()
+            try:
+                lang = self.get_language_info(srt_lang)
+            except:
+                lang = {'name': '', '2let': '', '3let': ''}
+            if completed.lower() == 'completed' and lang['3let'] != '' and (lang['3let'] in langs) and episode == searchepisode and season == searchseason:
+                return SubtitleResult.AVAILABLE
+        return SubtitleResult.NOT_AVAILABLE
+
+    def __get_cached_url(self, url):
+        kodi.log(__name__, 'Fetching Cached URL: %s' % url, log_utils.LOGDEBUG)
+        req = urllib2.Request(url)
+
+        host = BASE_URL.replace('http://', '')
+        req.add_header('User-Agent', USER_AGENT)
+        req.add_header('Host', host)
+        req.add_header('Referer', BASE_URL)
         try:
-            if item['tvshow']:
-                return self.query_tv_show(item['tvshow'],
-                                          item['season'],
-                                          item['episode'],
-                                          item['3let_language'])
-            elif item['title']:
-                return self.query_film(item['title'], item['year'], item['3let_language'])
+            response = urllib2.urlopen(req, timeout=10)
+            html = response.read()
+            html = self.cleanse_title(html)
+        except Exception as e:
+            kodi.log(__name__, 'Failed to connect to URL %s: (%s)' % (url, e), kodi.LOGDEBUG)
+            return ''
+
+        return html
+
+    def cleanse_title(self, text):
+        def fixup(m):
+            text = m.group(0)
+            if not text.endswith(';'): text += ';'
+            if text[:2] == "&#":
+                # character reference
+                try:
+                    if text[:3] == "&#x":
+                        return unichr(int(text[3:-1], 16))
+                    else:
+                        return unichr(int(text[2:-1]))
+                except ValueError:
+                    pass
             else:
-                return self.search_filename(item['filename'], item['3let_language'])
-        except:
-            kodi.log(__name__, "failed to connect to Addic7ed service for subtitle search", kodi.LOGNOTICE)
-            return SubtitleResult.NOT_AVAILABLE
-        
+                # named entity
+                try:
+                    text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
+                
+                except KeyError:
+                    pass
+
+            # replace nbsp with a space
+            text = text.replace(u'\xa0', u' ')
+            return text
+    
+        if isinstance(text, str):
+            try: text = text.decode('utf-8')
+            except:
+                try: text = text.decode('utf-8', 'ignore')
+                except: pass
+    
+        return re.sub("&(\w+;|#x?\d+;?)", fixup, text.strip())
+
     @staticmethod
     def get_language_info(language):
         for lang in LANGUAGES:
             if lang[0] == language:
                 return {'name': lang[0], '2let': lang[2], '3let': lang[3]}
-  
-LANGUAGES = (
-  ("Albanian", "29", "sq", "alb", "0", 30201),
+
+    def searchsubtitles(self, item):
+        # noinspection PyBroadException
+        try:
+            if item['tvshow']:
+                tvshow_id = self.get_tvshow_id(item['tvshow'])
+                return self.get_subtitles(tvshow_id, item['season'], item['episode'], item['3let_language'])
+            else:
+                return SubtitleResult.NOT_AVAILABLE
+        except:
+            kodi.log(__name__, "failed to connect to Addic7ed service for subtitle search", kodi.LOGNOTICE)
+            return SubtitleResult.NOT_AVAILABLE
+
+
+LANGUAGES = (("Albanian", "29", "sq", "alb", "0", 30201),
   ("Arabic", "12", "ar", "ara", "1", 30202),
   ("Belarusian", "0", "hy", "arm", "2", 30203),
   ("Bosnian", "10", "bs", "bos", "3", 30204),
@@ -184,10 +184,10 @@ LANGUAGES = (
   ("Portuguese (Brazil)", "48", "pb", "pob", "33", 30234),
   ("Portuguese-BR", "48", "pb", "pob", "33", 30234),
   ("Brazilian", "48", "pb", "pob", "33", 30234),
-  ("Español (Latinoamérica)", "28", "es", "spa", "100", 30240),
-  ("Español (España)", "28", "es", "spa", "100", 30240),
+  ("Espa�ol (Latinoam�rica)", "28", "es", "spa", "100", 30240),
+  ("Espa�ol (Espa�a)", "28", "es", "spa", "100", 30240),
   ("Spanish (Latin America)", "28", "es", "spa", "100", 30240),
-  ("Español", "28", "es", "spa", "100", 30240),
+  ("Espa�ol", "28", "es", "spa", "100", 30240),
   ("SerbianLatin", "36", "sr", "scc", "100", 30237),
   ("Spanish (Spain)", "28", "es", "spa", "100", 30240),
   ("Chinese (Traditional)", "17", "zh", "chi", "100", 30207),
