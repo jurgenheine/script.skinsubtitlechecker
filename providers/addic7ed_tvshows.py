@@ -1,18 +1,29 @@
+# -*- coding: utf-8 -*-
 import os
 import time
 import urllib2
 import re
 import xbmcvfs
+import htmlentitydefs
 from skinsubtitleresult import SubtitleResult
 import skinsubtitlekodi as kodi
 
 BASE_URL = 'http://www.addic7ed.com'
+USER_AGENT = "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko"
+
 
 class Adic7edServer_TVShows():
+
+    def __init__(self):
+        pass
+
+    def __enter__(self):
+        return self
+
     def get_tvshow_id(self, title, year=None):
         match_title = title.lower()
         
-        html = self.__get_cached_url(BASE_URL, 24)
+        html = self.__get_cached_url(BASE_URL)
         regex = re.compile('option\s+value="(\d+)"\s*>(.*?)</option')
         site_matches = []
         for item in regex.finditer(html):
@@ -62,7 +73,7 @@ class Adic7edServer_TVShows():
         return SubtitleResult.NOT_AVAILABLE
 
     def __get_cached_url(self, url):
-        kodi.log(__name__, 'Fetching Cached URL: %s' % url, log_utils.LOGDEBUG)
+        kodi.log(__name__, 'Fetching Cached URL: %s' % url, kodi.LOGDEBUG)
         req = urllib2.Request(url)
 
         host = BASE_URL.replace('http://', '')
@@ -126,12 +137,15 @@ class Adic7edServer_TVShows():
                 return self.get_subtitles(tvshow_id, item['season'], item['episode'], item['3let_language'])
             else:
                 return SubtitleResult.NOT_AVAILABLE
-        except:
-            kodi.log(__name__, "failed to connect to Addic7ed service for subtitle search", kodi.LOGNOTICE)
+        except Exception as e:
+            kodi.log(__name__, 'failed to connect to Addic7ed service for subtitle search (%s)' % e, kodi.LOGNOTICE)
             return SubtitleResult.NOT_AVAILABLE
 
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
 
-LANGUAGES = (("Albanian", "29", "sq", "alb", "0", 30201),
+LANGUAGES = (
+  ("Albanian", "29", "sq", "alb", "0", 30201),
   ("Arabic", "12", "ar", "ara", "1", 30202),
   ("Belarusian", "0", "hy", "arm", "2", 30203),
   ("Bosnian", "10", "bs", "bos", "3", 30204),
@@ -184,10 +198,10 @@ LANGUAGES = (("Albanian", "29", "sq", "alb", "0", 30201),
   ("Portuguese (Brazil)", "48", "pb", "pob", "33", 30234),
   ("Portuguese-BR", "48", "pb", "pob", "33", 30234),
   ("Brazilian", "48", "pb", "pob", "33", 30234),
-  ("Espa�ol (Latinoam�rica)", "28", "es", "spa", "100", 30240),
-  ("Espa�ol (Espa�a)", "28", "es", "spa", "100", 30240),
+  ("Español (Latinoamérica)", "28", "es", "spa", "100", 30240),
+  ("Español (España)", "28", "es", "spa", "100", 30240),
   ("Spanish (Latin America)", "28", "es", "spa", "100", 30240),
-  ("Espa�ol", "28", "es", "spa", "100", 30240),
+  ("Español", "28", "es", "spa", "100", 30240),
   ("SerbianLatin", "36", "sr", "scc", "100", 30237),
   ("Spanish (Spain)", "28", "es", "spa", "100", 30240),
   ("Chinese (Traditional)", "17", "zh", "chi", "100", 30207),
