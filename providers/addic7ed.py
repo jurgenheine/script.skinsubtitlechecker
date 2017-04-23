@@ -9,9 +9,11 @@ import string
 from BeautifulSoup import BeautifulSoup
 from skinsubtitleresult import SubtitleResult
 import skinsubtitlekodi as kodi
+from skinsubtitlelanguage import LanguageHelper
 
 class Adic7edServer:
     def __init__(self, *args, **kwargs):
+        self.languagehelper = LanguageHelper()
         self.host = "http://www.addic7ed.com"
         self.release_pattern = re.compile("Version (.+), ([0-9]+).([0-9])+ MBs")
 
@@ -27,6 +29,8 @@ class Adic7edServer:
         self.host = None
         self.release_pattern = None
         self.req_headers = None
+        self.languagehelper = None
+        del self.languagehelper        
         del self.host
         del self.release_pattern
         del self.req_headers
@@ -74,14 +78,14 @@ class Adic7edServer:
 
                 # noinspection PyBroadException
                 try:
-                    lang = self.get_language_info(fulllanguage)
+                    lang = self.languagehelper.get_ISO_639_2(srt_lang)
                 except:
-                    lang = {'name': '', '2let': '', '3let': ''}
+                    lang =  ''
                 
                 statustd = langs_html.findNext("td")
                 status = statustd.find("b").string.strip()
                 
-                if status == "Completed" and lang['3let'] != '' and (lang['3let'] in langs):
+                if status == "Completed" and lang != '' and (lang in langs):
                     return SubtitleResult.AVAILABLE
             except Exception as ex:
                 kodi.log(__name__, "ERROR IN BS: %s" % str(ex))

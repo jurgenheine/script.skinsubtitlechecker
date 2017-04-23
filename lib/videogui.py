@@ -7,12 +7,12 @@ from skinsubtitlenotificationmethod import NotificationMethod
 
 class VideoGui:
     def __init__(self):
-        self._init_vars()
+        self.__init_vars()
                     
     def __enter__(self):
         return self
 
-    def _init_vars(self):
+    def __init_vars(self):
         self.window = kodi.get_window(10025)  # MyVideoNav.xml (videos)
         self.dialogwindow = kodi.get_window(12003)  # DialogVideoInfo.xml (movieinformation)
         self.language = Language()
@@ -199,14 +199,14 @@ class VideoGui:
         return kodi.get_condition_visibility("Window.IsVisible(movieinformation)")
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.clean_up_language(exc_type, exc_value, traceback)
-        self.clean_up_videoitem(exc_type, exc_value, traceback)
+        self.__clean_up_language(exc_type, exc_value, traceback)
+        self.__clean_up_videoitem(exc_type, exc_value, traceback)
         self.window = None
         self.dialogwindow = None
         del self.window
         del self.dialogwindow
 
-    def clean_up_language(self, exc_type, exc_value, traceback):
+    def __clean_up_language(self, exc_type, exc_value, traceback):
         # noinspection PyBroadException
         try:    
             # call explicit the exit function of the language class, it is not
@@ -218,7 +218,7 @@ class VideoGui:
             # database is not yet set
             pass
 
-    def clean_up_videoitem(self, exc_type, exc_value, traceback):
+    def __clean_up_videoitem(self, exc_type, exc_value, traceback):
         # noinspection PyBroadException
         try:    
             # call explicit the exit function of the videoitem class, it is not

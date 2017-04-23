@@ -12,25 +12,25 @@ from lib.db_utils import DBConnection
 class Main:
     def __init__(self):
         kodi.log(__name__, "version %s started" % kodi.get_version(), kodi.LOGNOTICE)
-        self._init_vars()
-        self._parse_argv() 
+        self.__init_vars()
+        self.__parse_argv() 
             
     def __enter__(self):
         return self
 
-    def _init_vars(self):
+    def __init_vars(self):
         self.gui = VideoGui()
         self.subtitlechecker = SubtitleChecker()
         self.stop = False
 
-    def _parse_argv(self):
+    def __parse_argv(self):
         self.params = kodi.get_params(sys.argv,1)
         kodi.log(__name__, "params: %s" % self.params)
-        self._set_action_from_params()
+        self.__set_action_from_params()
         skinsupport = self.action=='backend' or self.action=='runonce'
         self.gui.set_gui_params(self.params,skinsupport)
 
-    def _set_action_from_params(self):
+    def __set_action_from_params(self):
         if len(self.params) == 0:
             # if no parameters, then asume run from gui
             self.action = 'runfromgui'

@@ -21,10 +21,10 @@ class DBConnection():
         self.db_path = os.path.join(db_dir, 'subtitlecheckercache.db')
         self.db_lib = dbapi2
         if not kodi.file_exists(self.db_path):
-                self.create_db()
+                self.__create_db()
         else:
             self.__connect_to_db()
-            self.update_database()
+            self.__update_database()
             
 
     def __enter__(self):
@@ -111,24 +111,24 @@ class DBConnection():
             if addonid not in newaddonids:
                 self.delete_cached_provider(addonid)
     
-    def init_database(self):
+    def __init_database(self):
         # intended to be a common method for creating a db from scratch
         kodi.log(__name__, 'Building Subtitle checker Database', kodi.LOGDEBUG)
             
         self.__execute('PRAGMA journal_mode=WAL')
-        self.update_database()
+        self.__update_database()
  
-    def update_database(self):
+    def __update_database(self):
         self.__execute('CREATE TABLE IF NOT EXISTS subtitle_cache (year TEXT, season TEXT, episode TEXT, tvshow TEXT, title TEXT, filename TEXT, subtitle INTEGER, timestamp, PRIMARY KEY(year, season, episode, tvshow, title, filename))')
         self.__execute('CREATE TABLE IF NOT EXISTS provider_cache (addonid TEXT , PRIMARY KEY(addonid))')
 
-    def close_db(self):
+    def __close_db(self):
         try: self.db.close()
         except: pass
         self.db = None
         del self.db
 
-    def create_db(self):
+    def __create_db(self):
         # noinspection PyBroadException
         try:
             self.db.close()
@@ -137,7 +137,7 @@ class DBConnection():
         self.db = None
         self.__create_sqlite_db()
         self.__connect_to_db()
-        self.init_database()
+        self.__init_database()
 
     def __execute(self, sql, params=None):
         if params is None:
@@ -189,7 +189,7 @@ class DBConnection():
         return sql
     
     def __exit__(self, exc_type, exc_value, traceback):
-        self.close_db()
+        self.__close_db()
         self.settings.__exit__(exc_type, exc_value, traceback)
         self.db_lib = None
         self.db_path = None
