@@ -5,8 +5,9 @@ from skinsubtitlelanguage import LanguageHelper
 class Language:
     def __init__(self):
         self.languagehelper = LanguageHelper()
+        self.searchlanguages = []
         self.__set_searchlanguages()
-        if(self.searchlanguages.count > 0):
+        if(self.searchlanguages):
             for slang in self.searchlanguages:
                 if slang != "" and slang != None:
                     self.__set_subtitlelanguages(slang)

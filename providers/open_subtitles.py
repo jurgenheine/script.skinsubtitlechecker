@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 # Based on contents from https://github.com/amet/service.subtitles.opensubtitles
 
-import xmlrpclib
+import xmlrpc.client
 import skinsubtitlekodi as kodi
 from skinsubtitlesetting import Setting
 from skinsubtitleresult import SubtitleResult
@@ -11,7 +11,7 @@ __scriptname__ = "XBMC Subtitles"
 class OSDBServer:
 
     def __init__( self, *args, **kwargs ):
-        self.base_url = u"http://api.opensubtitles.org/xml-rpc"
+        self.base_url = "http://api.opensubtitles.org/xml-rpc"
 
     def __enter__(self):
         return self
@@ -22,7 +22,7 @@ class OSDBServer:
         
     def searchsubtitles( self, item):
         try:
-            server = xmlrpclib.Server( self.base_url, verbose=0 )
+            server = xmlrpc.client.Server( self.base_url, verbose=0 )
             setting =Setting()
             login = server.LogIn(setting.get_setting( "OSuser" ), setting.get_setting( "OSpass" ), "en", "%s_v%s" %(__scriptname__.replace(" ","_"),kodi.get_version()))
             osdb_token  = login[ "token" ]

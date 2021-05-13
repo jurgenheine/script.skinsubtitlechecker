@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import re
 import xbmcvfs
-import htmlentitydefs
+import html.entities
 from skinsubtitleresult import SubtitleResult
 import skinsubtitlekodi as kodi
 from skinsubtitlelanguage import LanguageHelper
@@ -75,14 +75,14 @@ class Adic7edServer_TVShows():
 
     def __get_cached_url(self, url):
         kodi.log(__name__, 'Fetching Cached URL: %s' % url, kodi.LOGDEBUG)
-        req = urllib2.Request(url)
+        req = urllib.request.Request(url)
 
         host = BASE_URL.replace('http://', '')
         req.add_header('User-Agent', USER_AGENT)
         req.add_header('Host', host)
         req.add_header('Referer', BASE_URL)
         try:
-            response = urllib2.urlopen(req, timeout=10)
+            response = urllib.request.urlopen(req, timeout=10)
             html = response.read()
             html = self.__cleanse_title(html)
         except Exception as e:
@@ -99,21 +99,21 @@ class Adic7edServer_TVShows():
                 # character reference
                 try:
                     if text[:3] == "&#x":
-                        return unichr(int(text[3:-1], 16))
+                        return chr(int(text[3:-1], 16))
                     else:
-                        return unichr(int(text[2:-1]))
+                        return chr(int(text[2:-1]))
                 except ValueError:
                     pass
             else:
                 # named entity
                 try:
-                    text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
+                    text = chr(html.entities.name2codepoint[text[1:-1]])
                 
                 except KeyError:
                     pass
 
             # replace nbsp with a space
-            text = text.replace(u'\xa0', u' ')
+            text = text.replace('\xa0', ' ')
             return text
     
         if isinstance(text, str):

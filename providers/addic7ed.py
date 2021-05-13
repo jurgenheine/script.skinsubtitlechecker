@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 # Based on contents from https://github.com/cflannagan/service.subtitles.addic7ed
 
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import re
 import socket
 import string
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 from skinsubtitleresult import SubtitleResult
 import skinsubtitlekodi as kodi
 from skinsubtitlelanguage import LanguageHelper
@@ -36,8 +36,8 @@ class Adic7edServer:
         del self.req_headers
     
     def get_url(self, url):
-        request = urllib2.Request(url, headers=self.req_headers)
-        opener = urllib2.build_opener()
+        request = urllib.request.Request(url, headers=self.req_headers)
+        opener = urllib.request.build_opener()
         response = opener.open(request)
         
         contents = response.read()
@@ -56,7 +56,7 @@ class Adic7edServer:
         return self.query(searchurl, langs)
 
     def query_film(self, name, year, langs):
-        name = urllib.quote(name.replace(" ", "_"))
+        name = urllib.parse.quote(name.replace(" ", "_"))
         searchurl = "%s/film/%s_(%s)-Download" % (self.host, name, str(year))
         return self.query(searchurl, langs)
 
@@ -64,9 +64,9 @@ class Adic7edServer:
         
         kodi.log(__name__, "Search URL - %s" % searchurl,kodi.LOGINFO)
         socket.setdefaulttimeout(10)
-        request = urllib2.Request(searchurl, headers=self.req_headers)
+        request = urllib.request.Request(searchurl, headers=self.req_headers)
         request.add_header('Pragma', 'no-cache')
-        page = urllib2.build_opener().open(request)
+        page = urllib.request.build_opener().open(request)
         content = page.read()
         content = content.replace("The safer, easier way", "The safer, easier way \" />")
         soup = BeautifulSoup(content)

@@ -2,7 +2,7 @@
 # Based on contents from https://github.com/amet/service.subtitles.podnapisi
 
 from xml.dom import minidom
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import skinsubtitlekodi as kodi
 from skinsubtitleresult import SubtitleResult
 from skinsubtitlelanguage import LanguageHelper
@@ -54,7 +54,7 @@ class PNServer:
             return SubtitleResult.NOT_AVAILABLE
   
     def __fetch(self,url):
-        socket = urllib.urlopen( url )
+        socket = urllib.request.urlopen( url )
         result = socket.read()
         socket.close()
         xmldoc = minidom.parseString(result)

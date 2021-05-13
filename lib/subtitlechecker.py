@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-import Queue as queue
+import queue as queue
 import threading
 from providers.open_subtitles import OSDBServer
 from providers.addic7ed import Adic7edServer
